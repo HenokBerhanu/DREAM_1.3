@@ -9,10 +9,14 @@
 
 Download and Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) on any one of the supported platforms:
 
- - Windows hosts
- - OS X hosts (x86 only, not M1)
- - Linux distributions
- - Solaris hosts
+ ```bash
+sudo apt remove virtualbox
+sudo apt update
+wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+echo "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" | sudo tee /etc/apt/sources.list.d/virtualbox.list
+sudo apt update
+sudo apt install virtualbox-7.0
+```
 
 This lab was last tested with VirtualBox 7.0.12, though newer versions should be ok.
 
@@ -23,11 +27,12 @@ Vagrant provides an easier way to deploy multiple virtual machines on VirtualBox
 
 Download and Install [Vagrant](https://www.vagrantup.com/) on your platform.
 
-- Windows
-- Debian
-- Centos
-- Linux
-- macOS (x86 only, not M1)
+```bash
+sudo apt-get remove --purge vagrant
+wget https://releases.hashicorp.com/vagrant/2.4.3/vagrant_2.4.3_x86_64.deb
+sudo dpkg -i vagrant_2.4.3_x86_64.deb
+vagrant version
+```
 
 This tutorial assumes that you have also installed Vagrant.
 
