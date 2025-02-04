@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# Point to Google's DNS server
-sed -i -e 's/#DNS=/DNS=8.8.8.8/' /etc/systemd/resolved.conf
+# Set DNS to Google's 8.8.8.8 inside systemd resolver
+grep -q "^DNS=" /etc/systemd/resolved.conf && \
+    sed -i 's/^#DNS=.*/DNS=8.8.8.8/' /etc/systemd/resolved.conf || \
+    echo "DNS=8.8.8.8" >> /etc/systemd/resolved.conf
 
-service systemd-resolved restart
+# Restart systemd-resolved to apply changes
+systemctl restart systemd-resolved

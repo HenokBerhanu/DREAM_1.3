@@ -14,7 +14,7 @@ then
 fi
 
 
-if [ "$(hostname)" = "controlplane01" ]
+if [ "$(hostname)" = "MasterNode" ]
 then
     sh -c 'sudo apt update' &> /dev/null
     sh -c 'sudo apt-get install -y sshpass' &> /dev/null
