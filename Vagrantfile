@@ -12,23 +12,23 @@ NODE_IP_START = 120
 # Sets up hosts file and DNS
 def setup_dns(node)
   # Set up /etc/hosts
-  node.vm.provision "setup-hosts", :type => "shell", :path => "ubuntu/vagrant/setup-hosts.sh" do |s|
+  node.vm.provision "setup-hosts", :type => "shell", :path => "configs/setup-hosts.sh" do |s|
     s.args = ["enp0s8", node.vm.hostname]
   end
   # Set up DNS resolution
-  node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
+  node.vm.provision "setup-dns", type: "shell", :path => "configs/update-dns.sh"
 end
 
 # Runs provisioning steps that are required by masters and workers
 def provision_kubernetes_node(node)
   # Set up kernel parameters, modules and tunables
-  node.vm.provision "setup-kernel", :type => "shell", :path => "ubuntu/setup-kernel.sh"
+  node.vm.provision "setup-kernel", :type => "shell", :path => "configs/setup-kernel.sh"
   # Set up ssh
-  node.vm.provision "setup-ssh", :type => "shell", :path => "ubuntu/ssh.sh"
+  node.vm.provision "setup-ssh", :type => "shell", :path => "configs/ssh.sh"
   # Set up DNS
   setup_dns node
   # Install cert verification script
-  node.vm.provision "shell", inline: "ln -s /ubuntu/cert_verify.sh /home/vagrant/cert_verify.sh"
+  node.vm.provision "shell", inline: "ln -s /configs/cert_verify.sh /home/vagrant/cert_verify.sh"
 end
 
 # All Vagrant configuration is done below.
@@ -61,9 +61,8 @@ Vagrant.configure("2") do |config|
     node.vm.network "forwarded_port", guest: 22, host: "#{2710}"
     provision_kubernetes_node node
     # Install (opinionated) configs for vim and tmux on master-node.
-    node.vm.provision "file", source: "./ubuntu/tmux.conf", destination: "$HOME/.tmux.conf"
-    node.vm.provision "file", source: "./ubuntu/vimrc", destination: "$HOME/.vimrc"
-    node.vm.provision "file", source: "./tools/approve-csr.sh", destination: "$HOME/approve-csr.sh"
+    node.vm.provision "file", source: "./configs/tmux.conf", destination: "$HOME/.tmux.conf"
+    node.vm.provision "file", source: "./configs/vimrc", destination: "$HOME/.vimrc"
   end
 
   # Provision Worker Nodes with custom names
