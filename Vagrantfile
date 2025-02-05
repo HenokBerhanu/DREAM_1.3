@@ -16,19 +16,19 @@ def setup_dns(node)
     s.args = ["enp0s8", node.vm.hostname]
   end
   # Set up DNS resolution
-  node.vm.provision "setup-dns", type: "shell", :path => "configs/update-dns.sh"
+  node.vm.provision "setup-dns", type: "shell", :path => "configs/setup_dns.sh"
 end
 
 # Runs provisioning steps that are required by masters and workers
 def provision_kubernetes_node(node)
   # Set up kernel parameters, modules and tunables
   node.vm.provision "setup-kernel", :type => "shell", :path => "configs/setup-kernel.sh"
-  # Set up ssh
-  node.vm.provision "setup-ssh", :type => "shell", :path => "configs/ssh.sh"
+  # Set up ssh deamon
+  node.vm.provision "setup-ssh", :type => "shell", :path => "configs/ssh_deamon.sh"
   # Set up DNS
   setup_dns node
   # Install cert verification script
-  node.vm.provision "shell", inline: "ln -s /configs/cert_verify.sh /home/vagrant/cert_verify.sh"
+  node.vm.provision "shell", inline: "ln -s /configs/verify_certificate.sh /home/vagrant/verify_certificate.sh"
 end
 
 # All Vagrant configuration is done below.
