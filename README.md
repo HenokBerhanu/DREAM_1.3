@@ -30,7 +30,7 @@ Before you begin, ensure you have the following installed on your host machine:
 
    This command will:
 
-   - Create two virtual machines: one master node and one worker node.
+   - Create three virtual machines: one master node and two worker nodes.
    - Provision each machine using the provided shell scripts to configure the system for Kubernetes.
 
 3. **Access the Master Node**
