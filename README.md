@@ -2,7 +2,7 @@
 
 This repository contains the configuration and scripts necessary to set up a three-node Kubernetes (K8s) cluster using Vagrant (v2.4.3) and VirtualBox(v7.0.24). The cluster is designed to implement the DIAM architecture, with one master node and two worker node.
 
-The first worker node is the CoudNode which handles the application and control plane of the SDN architecture, while the second worker node 
+The first worker node is the CoudNode which handles the application and control plane of the SDN architecture, while the second worker node is the EdgeNode where KubeEdge will be setup as an edge orchestrator. Agents that are required for the edge node will deployed as pod to communicate with the edge devices using MQTT message broker.
 
 ## Prerequisites
 
