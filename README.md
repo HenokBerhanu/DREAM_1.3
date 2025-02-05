@@ -58,7 +58,7 @@ Before you begin, ensure you have the following installed on your host machine:
 ## Notes
 
 - Ensure that your system has sufficient resources to run three virtual machines simultaneously.
-- The provisioning scripts are designed for Ubuntu-based systems. If you are using a different base box, you may need to adjust the scripts accordingly.
+- The provisioning scripts are designed for Ubuntu-jammy systems. If you are using a different base box, you may need to adjust the scripts accordingly.
 
 ## Troubleshooting
 
