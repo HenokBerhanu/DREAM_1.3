@@ -1,5 +1,7 @@
 #################################################################################################################
-sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cidr=192.168.0.0/16 # 192.168.0.0/16 if Calico CNI is used # 10.244.0.0/16 if Flannel CNI is used
+# or you can also provide image repo directory if there is a firewall issue or the aboove command got stuck taking longer time
+sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cidr=192.168.0.0/16 --image-repository registry.k8s.io
 #################################################################################################################
 
 #########################################################################
@@ -25,7 +27,7 @@ kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/
 #####################################################################################################
 
 #####################################################################################################################################
-# install Calico pod network addon the pod network cidr shall be 192.168.0.0/24
+# install Calico pod network addon the pod network cidr shall be 192.168.0.0/16
 kubectl --kubeconfig=/etc/kubernetes/admin.conf create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/tigera-operator.yaml 
 #####################################################################################################################################
 ##############################################################################################################################################
