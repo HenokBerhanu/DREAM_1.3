@@ -1,13 +1,34 @@
 #################################################################################################################
 sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cidr=192.168.0.0/16 # 192.168.0.0/16 if Calico CNI is used # 10.244.0.0/16 if Flannel CNI is used
 # or you can also provide image repo directory if there is a firewall issue or the aboove command got stuck taking longer time
-sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cidr=192.168.0.0/16 --image-repository registry.k8s.io
+
+# kubeadm config images list --kubernetes-version v1.29.15 --image-repository registry.k8s.io
+
+# for img in \
+#   registry.k8s.io/kube-apiserver:v1.29.15 \
+#   registry.k8s.io/kube-controller-manager:v1.29.15 \
+#   registry.k8s.io/kube-scheduler:v1.29.15 \
+#   registry.k8s.io/kube-proxy:v1.29.15 \
+#   registry.k8s.io/coredns/coredns:v1.11.1 \
+#   registry.k8s.io/pause:3.9 \
+#   registry.k8s.io/etcd:3.5.16-0; do
+#   echo "Pulling $img"
+#   sudo ctr images pull $img || { echo "❌ Failed to pull $img"; exit 1; }
+# done
+
+
+sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cidr=10.244.0.0/16 --image-repository registry.k8s.io
 #################################################################################################################
 
 #########################################################################
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
 ##################################################################
 
 #########################################################################################3
@@ -20,6 +41,10 @@ sudo -i
 swapoff -a
 exit
 ###########################################################################################
+
+# curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/tigera-operator.yaml -O
+# curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml -O
+
 
 #####################################################################################################
 # Install Flannel CNI, the pod network cidr shall be 10.244.0.0/16

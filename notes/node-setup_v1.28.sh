@@ -100,3 +100,25 @@ sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 ################################################
+
+###############################################################################################
+# Configuring the Kubelet to Use the systemd Cgroup Driver:
+
+# Create or Edit the Kubelet Configuration File:
+      #sudo nano /var/lib/kubelet/config.yaml
+
+# Add or Modify the cgroupDriver Setting:
+      #cgroupDriver: systemd
+
+# Restart the Kubelet to Apply Changes:
+      #sudo systemctl restart kubelet
+
+# Check the Kubelet's Configuration:
+      sudo cat /var/lib/kubelet/config.yaml | grep cgroupDriver
+# Output should be: cgroupDriver: systemd
+
+# nspect containerd's Configuration
+sudo cat /etc/containerd/config.toml | grep SystemdCgroup
+# Output should be SystemdCgroup = true
+###########################################################################################
+
