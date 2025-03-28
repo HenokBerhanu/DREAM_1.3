@@ -289,7 +289,17 @@ sudo systemctl status edgecore
 sudo systemctl restart containerd
 sudo systemctl status containerd
 #####################################################################################################
+# Do this to exclude main cni to function on the edge node
+kubectl label node edgenode edge.kubeedge.io/exclude-cni=true
 
+# then add under spec.template.spec:
+kubectl edit daemonset kube-flannel-ds -n kube-flannel
+
+# Add this:
+- key: edge.kubeedge.io/exclude-cni
+  operator: NotIn
+  values:
+  - "true"
 ###############################################################################################
 # Two pods from calico-system ns fails at the edge node so check it
 kubectl get pods -A -o wide
@@ -349,7 +359,7 @@ kubectl apply -f edge-nginx.yaml
 
 # Check EdgeCore logs (on the Edge Node)
 
-journalctl -u edgecore -f
+sudo journalctl -u edgecore -f
 
 # Check CloudCore logs (on the Master Node)
 
@@ -360,11 +370,9 @@ journalctl -u cloudcore -f
 kubectl get pods -o wide
 ##########################################################################################
 
+# kubectl get installation default -n tigera-operator -o yaml
 
+# kubectl edit installation default -n tigera-operator
 
-kubectl get installation default -n tigera-operator -o yaml
-
-kubectl edit installation default -n tigera-operator
-
-kubectl rollout restart deploy tigera-operator -n tigera-operator
+# kubectl rollout restart deploy tigera-operator -n tigera-operator
 
