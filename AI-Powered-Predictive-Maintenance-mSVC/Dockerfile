@@ -23,3 +23,5 @@ EXPOSE 5001
 
 # Run the application
 CMD ["python", "predictive_maintenance.py"]
+
+ls update
