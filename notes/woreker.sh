@@ -10,3 +10,5 @@ kubeadm join 192.168.56.102:6443 --token 9d9ba9.ulogb6j3sfg0gly6 \
 
 sudo kubeadm join 192.168.56.102:6443 --token jhxs97.3z9icyh2vt96hokq \
 	--discovery-token-ca-cert-hash sha256:87c7a12e45dd95579f281fc83861c77ab2515bc52ead320cebcf95c721c8ca65
+
+kubectl label node cloudnode node-role.kubernetes.io/worker-node=

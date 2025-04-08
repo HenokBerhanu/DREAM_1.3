@@ -216,6 +216,7 @@ sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
 sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
         --token=5b961671582cfa4cdf2953a3f684856024022a14d1ed44611142dbaa743c123c.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDMxODA4MzV9.ZBqHHC7Fr_G2dv4_tRkeRkWVvrPHqioMzlLgA4Cp4uM \
         --kubeedge-version=1.20.0 \
+        --kube-config=/etc/kubernetes/admin.conf \
         --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
         --cgroupdriver=systemd
 ##################################################################################################################
@@ -240,6 +241,9 @@ sudo apt-get install -y containernetworking-plugins
 # then
 sudo systemctl restart edgecore
 sudo systemctl status edgecore
+
+sudo vim /etc/kubeedge/config/edgecore.yaml
+
 
 #If the issue persists, try:
 journalctl -u edgecore -xe
@@ -370,9 +374,15 @@ journalctl -u cloudcore -f
 kubectl get pods -o wide
 ##########################################################################################
 
+modules:
+ 18   cloudHub:
+ 19     advertiseAddress:
+ 20     - 10.0.2.15
+
 # kubectl get installation default -n tigera-operator -o yaml
 
 # kubectl edit installation default -n tigera-operator
 
 # kubectl rollout restart deploy tigera-operator -n tigera-operator
 
+echo NWI5NjE2NzE1ODJjZmE0Y2RmMjk1M2EzZjY4NDg1NjAyNDAyMmExNGQxZWQ0NDYxMTE0MmRiYWE3NDNjMTIzYy5leUpoYkdjaU9pSklVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKbGVIQWlPakUzTkRNeU9UWTBPRFo5Lk5QMWpuM2xDbk5DRUVYME5BaHFQYk05UFhfVHBkcG9EOE5iZmozUTVEajQ= |base64 -d
