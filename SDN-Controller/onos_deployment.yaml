@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onos-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: onos
+  template:
+    metadata:
+      labels:
+        app: onos
+    spec:
+      containers:
+      - name: onos
+        image: onosproject/onos:latest
+        ports:
+        - containerPort: 8181   # REST API
+        - containerPort: 8101   # CLI SSH
+        - containerPort: 6653   # OpenFlow
+        - containerPort: 6633   # Legacy OpenFlow
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: onos-service
+spec:
+  selector:
+    app: onos
+  type: NodePort
+  ports:
+    - name: rest
+      port: 8181
+      targetPort: 8181
+      nodePort: 30181
+    - name: openflow
+      port: 6653
+      targetPort: 6653
+      nodePort: 30653
+
+# docker pull onosproject/onos
+# kubectl apply -f onos_deployment.yaml
+# Access ONOS UI from host: http://<NODE-IP>:30181/onos/ui : uname- onos and pass- rocks
+# Then use REST APIs to install flows and Connect OVS switches to ONOS at tcp://<NODE-IP>:6653.
