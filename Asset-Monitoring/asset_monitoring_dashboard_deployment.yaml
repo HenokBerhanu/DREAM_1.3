@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asset-monitoring-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: asset-monitoring-dashboard
+  template:
+    metadata:
+      labels:
+        app: asset-monitoring-dashboard
+    spec:
+      containers:
+      - name: dashboard
+        image: your-dockerhub-username/asset-monitoring-dashboard:latest
+        ports:
+        - containerPort: 5003
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: asset-monitoring-dashboard-service
+spec:
+  selector:
+    app: asset-monitoring-dashboard
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5003
+  type: NodePort  # You can change this to LoadBalancer if using cloud
+
+# kubectl apply -f asset_monitoring_dashboard_deployment.yaml # Apply the Deployment
+# kubectl get svc asset-monitoring-dashboard-service # To access the dashboard
+# open the NodePort in your browser at http://<NODE-IP>:<NODE-PORT>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Asset Monitoring Dashboard</title>
+    <script>
+        async function fetchAlerts() {
+            const response = await fetch('/api/alerts');
+            const data = await response.json();
+            const alertBox = document.getElementById("alerts");
+            alertBox.innerHTML = '';
+            data.forEach(alert => {
+                const item = document.createElement("li");
+                item.textContent = JSON.stringify(alert);
+                alertBox.appendChild(item);
+            });
+        }
+        setInterval(fetchAlerts, 3000);  // Poll every 3 sec
+        window.onload = fetchAlerts;
+    </script>
+</head>
+<body>
+    <h2>Real-Time Asset Monitoring Alerts</h2>
+    <ul id="alerts"></ul>
+</body>
+</html>
