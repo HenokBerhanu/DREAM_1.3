@@ -1,9 +1,4 @@
 # Use Python as the base image
-
-# docker build -t your-dockerhub-username/predictive-maintenance:latest .
-# docker push your-dockerhub-username/predictive-maintenance:latest
-
-
 FROM python:3.9
 
 # Set working directory
@@ -23,3 +18,6 @@ EXPOSE 5001
 
 # Run the application
 CMD ["python", "predictive_maintenance.py"]
+
+# docker build -t your-dockerhub-username/predictive-maintenance:latest .
+# docker push your-dockerhub-username/predictive-maintenance:latest
