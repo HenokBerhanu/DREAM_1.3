@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ventilator-simulator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ventilator
+  template:
+    metadata:
+      labels:
+        app: ventilator
+    spec:
+      containers:
+      - name: ventilator
+        image: your-dockerhub-username/virtual-medical-device
+        command: ["python", "bed_sensor.py"]

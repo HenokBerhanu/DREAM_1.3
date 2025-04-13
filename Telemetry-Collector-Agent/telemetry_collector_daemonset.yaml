@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: telemetry-collector
+spec:
+  selector:
+    matchLabels:
+      app: telemetry-collector
+  template:
+    metadata:
+      labels:
+        app: telemetry-collector
+    spec:
+      containers:
+      - name: collector
+        image: your-dockerhub-username/telemetry-collector
+
+# kubectl apply -f telemetry_collector_daemonset.yaml

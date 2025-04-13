@@ -1,69 +1,147 @@
-# DREAM: Kubernetes Cluster for DIAM Architecture Implementation
+# SDN-Based Cloud-Edge Microservices Architecture for Smart Healthcare
 
-This repository contains the configuration and scripts necessary to set up a three-node Kubernetes (K8s) cluster using Vagrant (v2.4.3) and VirtualBox(v7.0.24). The cluster is designed to implement the DIAM architecture, with one master node and two worker node.
+This repository implements a Software-Defined Networking (SDN)-enabled, Kubernetes-based cloud-edge microservices architecture for **real-time hospital asset tracking, predictive maintenance**, and **dynamic security enforcement**.
 
-The first worker node is the CoudNode which handles the application and control plane of the SDN architecture, while the second worker node is the EdgeNode where KubeEdge will be setup as an edge orchestrator. Agents that are required for the edge node will deployed as pod to communicate with the edge devices using MQTT message broker.
+The architecture integrates:
 
-## Prerequisites
+- **Microservices for telemetry analytics and policy management**
+- **ONOS SDN controller** for flow rule orchestration
+- **Open vSwitch (OVS)** at the edge node for fine-grained programmable networking
+- **Kafka + MQTT** for streaming telemetry and security alerts
+- **Prometheus + Grafana** for real-time metric monitoring
+- **Flask-based Asset Monitoring Dashboard** with integrated flow logs
 
-Before you begin, ensure you have the following installed on your host machine:
+---
 
-- [Vagrant](https://www.vagrantup.com/downloads)
-- [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+## 🚀 Architecture Overview
 
-## Getting Started
+### Nodes
+| Role        | Node Name     | Runtime    | CNI        | Description                             |
+|-------------|---------------|------------|------------|-----------------------------------------|
+| Master      | master-node   | containerd | Flannel    | Kubernetes control plane                |
+| Cloud       | cloud-node    | containerd | Flannel    | Hosts ONOS + microservices              |
+| Edge        | edge-node     | containerd | ❌ None     | Hosts virtual devices + OVS bridge      |
 
-1. **Clone the Repository**
+### Planes & Key Components
 
-   ```bash
-   git clone https://github.com/HenokBerhanu/DREAM.git
-   cd DREAM
-   ```
+#### 🟩 Application Plane
+| Service | Description |
+|---------|-------------|
+| `predictive-maintenance` | Autoencoder-based anomaly detection from telemetry |
+| `policy-manager`         | REST-based flow policy updates to ONOS |
+| `asset-monitoring-dashboard` | Web UI with alert and flow log visualization |
 
-2. **Start the Vagrant Environment**
+#### 🟦 Control Plane
+| Component       | Description |
+|------------------|-------------|
+| `onos-controller` | ONOS SDN controller, listens on TCP 6653 |
+| `fault-detector` | Triggers ONOS flow changes on failure detection |
 
-   Run the following command to set up and start the virtual machines:
+#### 🔵 Data Plane
+| Component         | Description |
+|------------------|-------------|
+| `virtual-devices` | Simulated ventilators, ECG monitors, infusion pumps, etc. |
+| `telemetry-collector` | Subscribes to MQTT, streams data to Kafka |
+| `openvswitch (OVS)` | Manages programmable flows on edge node |
+| `security-enforcement-agent` | Blocks devices via ONOS or OVS + exposes Prometheus & UI API |
 
-   ```bash
-   vagrant up
-   ```
+---
 
-   This command will:
+## 📦 Directory Structure
 
-   - Create three virtual machines: one master node and two worker nodes.
-   - Provision each machine using the provided shell scripts to configure the system for Kubernetes.
+```bash
+.
+├── deployments/
+│   ├── predictive_maintenance_deployment.yaml
+│   ├── policy_manager_deployment.yaml
+│   ├── asset_monitoring_dashboard_deployment.yaml
+│   ├── onos_deployment.yaml
+│   ├── fault_detector_deployment.yaml
+│   ├── security_agent_daemonset.yaml
+│   └── virtual-devices/ (ventilator, ecg, infusion...)
+├── enforcement-agent/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── enforcement_agent.py
+├── dashboard/
+│   ├── app.py
+│   └── templates/index.html
+└── README.md
+```
 
-3. **Access the Master Node**
+---
 
-   To interact with the Kubernetes cluster, SSH into the master node:
+## 🔧 Setup Instructions
 
-   ```bash
-   vagrant ssh MasterNode
-   ```
+### 1. Build and Push Images
+```bash
+docker build -t <your-dockerhub>/predictive-maintenance .
+docker push <your-dockerhub>/predictive-maintenance
+# Repeat for all other services
+```
 
-   From here, you can use `kubectl` to manage your cluster.
+### 2. Deploy Microservices to Kubernetes
+```bash
+kubectl apply -f deployments/
+```
 
-## Configuration Details
+### 3. Set Up OVS on Edge Node
+```bash
+sudo apt install -y openvswitch-switch
+sudo ovs-vsctl add-br br0
+sudo ovs-vsctl set-controller br0 tcp://<ONOS-IP>:6653
+```
 
-- **Vagrantfile**: Defines the configuration for the virtual machines, including provisioning steps and network settings.
+Manually connect pods to OVS using a veth pair (see `attach-pod-to-ovs.sh` for script).
 
-- **Provisioning Scripts**: Located in the `configs` directory, these scripts perform various setup tasks:
-  - `verify_certificate.sh`: Verifies SSL/TLS certificates for Kubernetes components.
-  - `setup_kernel.sh`: Configures the kernel with the necessary modules and network settings for Kubernetes.
-  - `setup_dns.sh`: Sets the system to use Google's DNS server.
-  - `setup_hosts.sh`: Updates the `/etc/hosts` file to ensure proper name resolution between nodes.
+---
 
-- **tmux Configuration**: A `.tmux.conf` file is provided to enhance the terminal multiplexing experience. It is automatically placed in the home directory of the `vagrant` user during provisioning.
+## 📈 Monitoring & Visualization
 
-## Notes
+### Prometheus Metrics (Port `9000`)
+- `alerts_processed_total`
+- `flows_blocked_total`
+- `flow_log_scrapes_total`
 
-- Ensure that your system has sufficient resources to run three virtual machines simultaneously.
-- The provisioning scripts are designed for Ubuntu-jammy systems. If you are using a different base box, you may need to adjust the scripts accordingly.
+### Asset Monitoring Dashboard (Port `5003`)
+- `/api/alerts` — alert stream from predictive maintenance
+- `/api/flows` — flow logs from Security Agent
 
-## Troubleshooting
+---
 
-If you encounter issues during the setup process:
+## 📊 Grafana Integration
 
-- Check the output of the `vagrant up` command for any error messages.
-- Ensure that VirtualBox and Vagrant are both updated to their latest versions.
-- Consult the [Vagrant documentation](https://www.vagrantup.com/docs) for additional guidance.
+Prometheus scrapes Security Agent at:
+```
+http://security-agent-service:9000/metrics
+```
+
+Example Grafana panels:
+- Blocked devices over time
+- Security alerts per minute
+- Flow logs heatmap (via `/api/flows`)
+
+---
+
+## 📚 Related Work
+
+This architecture was implemented as part of the research presented in:
+- IEEE MeMeA 2025 (submitted): *“A Cloud-Edge Microservices Architecture for Smart Healthcare: SDN-Based Medical Asset Management”*
+
+---
+
+## ✨ Highlights
+
+- 94.5% anomaly detection accuracy using Autoencoder models
+- Inference latency of 35.2ms for real-time medical telemetry
+- Edge node offloads 35% of cloud processing via KubeEdge
+- Fully programmable traffic flow using ONOS + OVS
+
+---
+
+## 🧠 Authors
+
+- Henok Berhanu Tsegaye — Postdoctoral Fellow, University of New Mexico  
+- [@HenokBerhanu](https://github.com/HenokBerhanu)
+
+---
