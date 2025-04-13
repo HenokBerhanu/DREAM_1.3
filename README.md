@@ -13,6 +13,8 @@ The architecture integrates:
 
 ---
 
+![SDN based microservice architecture](figs/MeMea.png)
+
 ## 🚀 Architecture Overview
 
 ### Nodes
