@@ -14,6 +14,7 @@ Ensure the following are installed on your **host machine**:
 
 - [Vagrant](https://www.vagrantup.com/downloads)
 - [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+- Host: Ubuntu Jammy
 
 ---
 
@@ -21,8 +22,8 @@ Ensure the following are installed on your **host machine**:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/HenokBerhanu/DREAM.git
-cd DREAM
+git clone https://github.com/HenokBerhanu/DREAM_1.3.git
+cd DREAM_1.3
 ```
 
 ### 2. Bring Up the Cluster
@@ -50,9 +51,9 @@ kubectl get nodes
 You should see:
 ```
 NAME         STATUS   ROLES           AGE   VERSION
-master       Ready    control-plane   ...   v1.27.x
-cloudnode    Ready    <none>          ...   v1.27.x
-edgenode     Ready    <none>          ...   v1.27.x
+masternode   Ready    control-plane   ...   v1.29.15
+cloudnode    Ready    worker-node     ...   v1.29.15
+edgenode     Ready    agent,edge      ...   v1.30.7-kubeedge-v1.20.0
 ```
 
 ---
@@ -62,7 +63,7 @@ edgenode     Ready    <none>          ...   v1.27.x
 ### 📂 Vagrantfile
 Defines the VM structure:
 - Node hostnames
-- Static IPs (192.168.56.102-104)
+- Static IPs (192.168.56.102/121/122)
 - Network adapters
 - Node roles (master, cloud, edge)
 
@@ -118,7 +119,7 @@ Ensure `Controller "tcp://192.168.56.103:6653"` is shown for `br0`.
 
 ## 📅 Recommendations
 
-- Allocate at least **2 CPUs and 4GB RAM per VM** for smooth deployment.
+- Allocate at least **6 CPUs and 8GB RAM per worker VM and 4 CPUs and 4GB RAM for master node** for smooth deployment.
 - Use **Ubuntu-jammy base image** (default in this repo).
 - Ensure host system has virtualization extensions enabled (e.g., VT-x/AMD-V).
 
@@ -164,5 +165,3 @@ Use `attach-pod-to-ovs.sh` to bridge pod veth to `br0`.
 - [KubeEdge](https://kubeedge.io/)
 
 ---
-
-Happy deploying! 🌟
