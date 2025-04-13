@@ -1,4 +1,4 @@
-# DREAM: Kubernetes Cluster for DIAM Architecture Implementation
+# Kubernetes Cluster for DIAM Architecture Implementation
 
 This repository provides everything you need to set up a **three-node Kubernetes (K8s) cluster** using **Vagrant v2.4.3** and **VirtualBox v7.0.24**. The cluster supports the **DIAM (Distributed Intelligent Additive Manufacturing)** architecture with a Cloud-Edge deployment model.
 
