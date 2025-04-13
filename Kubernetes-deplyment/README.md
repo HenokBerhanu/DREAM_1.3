@@ -1,69 +1,168 @@
 # DREAM: Kubernetes Cluster for DIAM Architecture Implementation
 
-This repository contains the configuration and scripts necessary to set up a three-node Kubernetes (K8s) cluster using Vagrant (v2.4.3) and VirtualBox(v7.0.24). The cluster is designed to implement the DIAM architecture, with one master node and two worker node.
+This repository provides everything you need to set up a **three-node Kubernetes (K8s) cluster** using **Vagrant v2.4.3** and **VirtualBox v7.0.24**. The cluster supports the **DIAM (Distributed Intelligent Additive Manufacturing)** architecture with a Cloud-Edge deployment model.
 
-The first worker node is the CoudNode which handles the application and control plane of the SDN architecture, while the second worker node is the EdgeNode where KubeEdge will be setup as an edge orchestrator. Agents that are required for the edge node will deployed as pod to communicate with the edge devices using MQTT message broker.
+The cluster comprises:
+- **1 Master Node**: Controls the Kubernetes control plane
+- **1 Cloud Worker Node**: Runs application and control plane services (e.g., ONOS SDN Controller, microservices)
+- **1 Edge Node**: Runs KubeEdge, Open vSwitch (OVS), and device-facing agents to simulate edge computing for DIAM
 
-## Prerequisites
+---
 
-Before you begin, ensure you have the following installed on your host machine:
+## 📝 Prerequisites
+Ensure the following are installed on your **host machine**:
 
 - [Vagrant](https://www.vagrantup.com/downloads)
 - [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 
-## Getting Started
+---
 
-1. **Clone the Repository**
+## 🚀 Getting Started
 
-   ```bash
-   git clone https://github.com/HenokBerhanu/DREAM.git
-   cd DREAM
-   ```
+### 1. Clone the Repository
+```bash
+git clone https://github.com/HenokBerhanu/DREAM.git
+cd DREAM
+```
 
-2. **Start the Vagrant Environment**
+### 2. Bring Up the Cluster
+```bash
+vagrant up
+```
+This will:
+- Create three VMs: `MasterNode`, `CloudNode`, and `EdgeNode`
+- Run provisioning scripts to:
+  - Install container runtimes (containerd)
+  - Set up Kubernetes and networking
+  - Initialize the master node using `kubeadm`
+  - Join worker nodes to the cluster
 
-   Run the following command to set up and start the virtual machines:
+> ⚠️ This process may take a few minutes depending on your system.
 
-   ```bash
-   vagrant up
-   ```
+### 3. Access the Cluster
+```bash
+vagrant ssh MasterNode
+```
+Once inside:
+```bash
+kubectl get nodes
+```
+You should see:
+```
+NAME         STATUS   ROLES           AGE   VERSION
+master       Ready    control-plane   ...   v1.27.x
+cloudnode    Ready    <none>          ...   v1.27.x
+edgenode     Ready    <none>          ...   v1.27.x
+```
 
-   This command will:
+---
 
-   - Create three virtual machines: one master node and two worker nodes.
-   - Provision each machine using the provided shell scripts to configure the system for Kubernetes.
+## 🔧 Cluster Configuration Details
 
-3. **Access the Master Node**
+### 📂 Vagrantfile
+Defines the VM structure:
+- Node hostnames
+- Static IPs (192.168.56.102-104)
+- Network adapters
+- Node roles (master, cloud, edge)
 
-   To interact with the Kubernetes cluster, SSH into the master node:
+### 📚 Provisioning Scripts (in `configs/`)
+| Script             | Description |
+|--------------------|-------------|
+| `setup_kernel.sh`  | Loads kernel modules and sysctl params |
+| `setup_hosts.sh`   | Adds hostname mappings to `/etc/hosts` |
+| `setup_dns.sh`     | Sets DNS resolver to 8.8.8.8            |
+| `verify_certificate.sh` | Verifies Kubernetes TLS artifacts  |
+| `install_containerd.sh` | Installs and configures containerd  |
+| `init_kube_master.sh`   | Runs `kubeadm init` on MasterNode   |
+| `join_worker.sh`        | Runs `kubeadm join` on Cloud and Edge nodes |
 
-   ```bash
-   vagrant ssh MasterNode
-   ```
+> 🚨 `EdgeNode` is excluded from CNI and is configured with OVS for SDN use.
 
-   From here, you can use `kubectl` to manage your cluster.
+---
 
-## Configuration Details
+## 🔍 Post-Setup Overview
 
-- **Vagrantfile**: Defines the configuration for the virtual machines, including provisioning steps and network settings.
+### 🚜 Master + Cloud Nodes
+- Use **Flannel CNI** for intra-cluster networking
+- Host ONOS controller, predictive maintenance, and policy manager microservices
 
-- **Provisioning Scripts**: Located in the `configs` directory, these scripts perform various setup tasks:
-  - `verify_certificate.sh`: Verifies SSL/TLS certificates for Kubernetes components.
-  - `setup_kernel.sh`: Configures the kernel with the necessary modules and network settings for Kubernetes.
-  - `setup_dns.sh`: Sets the system to use Google's DNS server.
-  - `setup_hosts.sh`: Updates the `/etc/hosts` file to ensure proper name resolution between nodes.
+### 🏠 Edge Node
+- **No CNI plugin** (excluded by label)
+- OVS bridge (`br0`) configured
+- Connected to ONOS via `tcp://<onos-ip>:6653`
+- Hosts simulated devices (pods) manually connected to OVS via veth
+- Runs KubeEdge agents
 
-- **tmux Configuration**: A `.tmux.conf` file is provided to enhance the terminal multiplexing experience. It is automatically placed in the home directory of the `vagrant` user during provisioning.
+---
 
-## Notes
+## ⚖️ Testing and Validation
 
-- Ensure that your system has sufficient resources to run three virtual machines simultaneously.
-- The provisioning scripts are designed for Ubuntu-jammy systems. If you are using a different base box, you may need to adjust the scripts accordingly.
+### Verify Node Status
+```bash
+kubectl get nodes -o wide
+```
 
-## Troubleshooting
+### Check Cluster Services
+```bash
+kubectl get pods -A
+```
 
-If you encounter issues during the setup process:
+### Check OVS Connection from Edge Node
+```bash
+sudo ovs-vsctl show
+```
+Ensure `Controller "tcp://192.168.56.103:6653"` is shown for `br0`.
 
-- Check the output of the `vagrant up` command for any error messages.
-- Ensure that VirtualBox and Vagrant are both updated to their latest versions.
-- Consult the [Vagrant documentation](https://www.vagrantup.com/docs) for additional guidance.
+---
+
+## 📅 Recommendations
+
+- Allocate at least **2 CPUs and 4GB RAM per VM** for smooth deployment.
+- Use **Ubuntu-jammy base image** (default in this repo).
+- Ensure host system has virtualization extensions enabled (e.g., VT-x/AMD-V).
+
+---
+
+## 🔧 Tmux Configuration
+- `.tmux.conf` is provisioned to each VM for pane synchronization and improved terminal multiplexing.
+
+---
+
+## ⚡ Interactive Edge Deployment Steps (Optional)
+Once the cluster is up:
+
+### 1. SSH into Edge Node
+```bash
+vagrant ssh EdgeNode
+```
+
+### 2. Set Up OVS
+```bash
+sudo ovs-vsctl add-br br0
+sudo ovs-vsctl set-controller br0 tcp://192.168.56.103:6653
+```
+
+### 3. Manually Connect Pods to OVS
+Use `attach-pod-to-ovs.sh` to bridge pod veth to `br0`.
+
+---
+
+## ⚠️ Troubleshooting
+
+- Reboot the VMs if `kubeadm join` hangs (EdgeNode might boot slowly)
+- Re-run `vagrant provision` if setup scripts fail
+- Check `kubelet`, `containerd`, and `flanneld` logs via `journalctl -u ...`
+- Ensure port 6443 (K8s API) and 6653 (OpenFlow) are accessible between nodes
+
+---
+
+## 📖 References
+- [Kubernetes Docs](https://kubernetes.io/docs/)
+- [Vagrant Docs](https://developer.hashicorp.com/vagrant/docs)
+- [ONOS Controller](https://opennetworking.org/onos/)
+- [KubeEdge](https://kubeedge.io/)
+
+---
+
+Happy deploying! 🌟

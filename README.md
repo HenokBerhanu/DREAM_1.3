@@ -140,8 +140,6 @@ This architecture was implemented as part of the research presented in:
 ---
 
 ## 🧠 Authors
-
-- Henok Berhanu Tsegaye — Postdoctoral Fellow, University of New Mexico  
 - [@HenokBerhanu](https://github.com/HenokBerhanu)
 
 ---
