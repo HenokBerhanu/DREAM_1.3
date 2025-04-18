@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: onos-controller
+  namespace: micro-onos
 spec:
   replicas: 1
   selector:
@@ -12,19 +13,38 @@ spec:
       labels:
         app: onos
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: cloudnode
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: onos
-        image: onosproject/onos:latest
+        image: henok28/onos-diam:v2  # ✅ Make sure this is your latest push
         ports:
-        - containerPort: 8181   # REST API
+        - containerPort: 8181   # REST GUI
         - containerPort: 8101   # CLI SSH
         - containerPort: 6653   # OpenFlow
-        - containerPort: 6633   # Legacy OpenFlow
+        - containerPort: 6633   # Legacy OF
+        env:
+        - name: ONOS_APPS
+          value: openflow,gui
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          runAsNonRoot: false
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: onos-service
+  namespace: micro-onos
 spec:
   selector:
     app: onos
@@ -38,6 +58,7 @@ spec:
       port: 6653
       targetPort: 6653
       nodePort: 30653
+
 
 # docker pull onosproject/onos
 # kubectl apply -f onos_deployment.yaml
