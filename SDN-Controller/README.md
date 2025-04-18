@@ -36,9 +36,6 @@ port=2, state=enabled, portName=veth0
 karaf@root > flows
 id=..., selector=[ETH_TYPE:lldp], treatment=[OUTPUT:CONTROLLER]
 ```
-
-![ONOS + OVS OpenFlow Communication](https://raw.githubusercontent.com/your-repo/assets/onos-ovs-flow.png)
-
 ---
 
 ## 📘 Deployment Steps
