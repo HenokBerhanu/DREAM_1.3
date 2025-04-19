@@ -19,7 +19,7 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: onos
-        image: henok28/onos-diam:v2  # ✅ Make sure this is your latest push
+        image: henok28/onos-diam:v3  # ✅ Make sure this is your latest push
         ports:
         - containerPort: 8181   # REST GUI
         - containerPort: 8101   # CLI SSH

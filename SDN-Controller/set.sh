@@ -104,3 +104,17 @@ deviceId=of:0000000000000001, flowRuleCount=3
     id=100009465555a, state=ADDED, bytes=0, packets=0, duration=95, liveType=UNKNOWN, priority=40000, tableId=0, appId=org.onosproject.core, selector=[ETH_TYPE:lldp], treatment=DefaultTrafficTreatment{immediate=[OUTPUT:CONTROLLER], deferred=[], transition=None, meter=[], cleared=true, StatTrigger=null, metadata=null}
     id=10000ea6f4b8e, state=ADDED, bytes=0, packets=0, duration=95, liveType=UNKNOWN, priority=40000, tableId=0, appId=org.onosproject.core, selector=[ETH_TYPE:arp], treatment=DefaultTrafficTreatment{immediate=[OUTPUT:CONTROLLER], deferred=[], transition=None, meter=[], cleared=true, StatTrigger=null, metadata=null}
 #######################################################################################################
+
+
+#####################################################################################################
+vagrant@MasterNode:~$ kubectl logs -n micro-onos -l app=onos | grep -i "connected\|device\|openflow"
+04:55:18.137 INFO  [DeviceManager] Device of:0000000000000001 connected
+04:55:18.138 INFO  [DeviceFlowTable] Activating term 1 for device of:0000000000000001
+04:55:18.238 INFO  [TopologyManager] Topology DefaultTopology{time=6801808320481, creationTime=1745038518228, computeCost=670015, clusters=1, devices=1, links=0} changed
+04:55:18.239 INFO  [InOrderFlowObjectiveManager] Driver ovs bound to device of:0000000000000001 ... initializing driver
+04:55:18.340 INFO  [DeviceManager] Role has been acknowledged for device of:0000000000000001
+04:55:18.340 INFO  [OpenFlowControllerImpl$OpenFlowSwitchAgent] Transitioned switch 00:00:00:00:00:00:00:01 to MASTER
+04:55:18.340 INFO  [OpenFlowControllerImpl$OpenFlowSwitchAgent] Purged pending stats 00:00:00:00:00:00:00:01
+04:55:19.335 INFO  [DistributedGroupStore] Group AUDIT: Setting device of:0000000000000001 initial AUDIT completed
+vagrant@MasterNode:~$ 
+#####################################################################################################
