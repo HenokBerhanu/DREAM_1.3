@@ -162,7 +162,8 @@ apps -a -s
 ## 📚 Citations & References
 - [ONOS Official GitHub](https://github.com/opennetworkinglab/onos)
 - [ONOS-Kubernetes Examples](https://github.com/opennetworkinglab/onos-kubernetes)
-- [KubeEdge Networking Architecture](https://kubeedge.io/)
+- [KubeEdge Networking](https://kubeedge.io/)
+- [KubeEdge Repo](https://github.com/kubeedge/kubeedge)
 - [ONOS Documentation](https://wiki.onosproject.org/display/ONOS)
 - [Open vSwitch Docs](https://docs.openvswitch.org/en/latest/)
 
