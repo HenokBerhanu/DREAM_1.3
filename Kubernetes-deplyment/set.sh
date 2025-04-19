@@ -16,7 +16,10 @@ sudo ovs-vsctl show
         Controller "tcp://192.168.56.103:30653"
           is_connected: true
 
-######################################################
+##############################################################
+##############################################################
+                # Start here
+##############################################################
 # Start over
 # Delete the ONOS Pod
 kubectl delete deployment onos-controller -n micro-onos
@@ -37,6 +40,13 @@ kubectl apply -f onos_deployment.yaml
 # Check logs:
 kubectl logs -n micro-onos -l app=onos --tail=50 -f
 
+# Activate openflow from the cloud node where onos is installed
+curl -u onos:rocks -X POST \
+  http://192.168.56.121:30181/onos/v1/applications/org.onosproject.openflow/active
+
+# and then check the port and ip is listening or not
+sudo   netstat -tulnp | grep 6653
+
 # Recreate OVS Bridge (EdgeNode)
 sudo ovs-vsctl add-br br0
 sudo ovs-vsctl set bridge br0 other-config:datapath-id=0000000000000001
@@ -53,12 +63,15 @@ sudo ovs-vsctl set-controller br0 tcp://192.168.56.121:6653
 
 
 # these three lines of command were the key for the ovs to be registered to the openflow onos in the cloud node
+# These three lines are really remarkable......
 sudo ovs-vsctl set-controller br0 tcp:192.168.56.121:6653
 sudo ovs-vsctl set bridge br0 protocols=OpenFlow13
 sudo ovs-ofctl -O OpenFlow13 probe br0
 #############################################################################################
 
-###############################################################
+###########################################################################################
+# Check the device ID is registeed to ONOS CLI from the master node
+###########################################################################################
 kubectl exec -n micro-onos -it $(kubectl get pods -n micro-onos -l app=onos -o name) -- /bin/bash
 root@CloudNode:~/onos# cd /root/onos/apache-karaf-4.2.14/bin
 root@CloudNode:~/onos/apache-karaf-4.2.14/bin# ./client
