@@ -172,9 +172,7 @@ apps -a -s
 ---
 
 ## 📦 Future Enhancements
-- Add automatic health monitoring via Prometheus
-- Integrate ONOS REST API dashboard to visualize topology
-- Replace dummy ports with IoT devices or digital twins for DIAM testbed
+- Will be placed based on our future requirements
 
 ---
 
