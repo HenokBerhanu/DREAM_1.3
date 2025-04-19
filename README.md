@@ -140,8 +140,3 @@ This architecture was implemented as part of the research presented in:
 - Fully programmable traffic flow using ONOS + OVS
 
 ---
-
-## 🧠 Authors
-- [@HenokBerhanu](https://github.com/HenokBerhanu)
-
----
