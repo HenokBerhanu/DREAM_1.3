@@ -168,9 +168,6 @@ apps -a -s
 
 ---
 
-## 👨‍💻 Author
-**Henok Berhanu Tsegaye** — University of New Mexico | DREAM Project
-
 ---
 
 ## 📦 Future Enhancements
