@@ -22,7 +22,7 @@ The architecture integrates:
 |-------------|---------------|------------|------------|-----------------------------------------|
 | Master      | master-node   | containerd | Flannel    | Kubernetes control plane                |
 | Cloud       | cloud-node    | containerd | Flannel    | Hosts ONOS + microservices              |
-| Edge        | edge-node     | containerd | ❌ None     | Hosts virtual devices + OVS bridge      |
+| Edge        | edge-node     | containerd | ❌ None    | Hosts virtual devices + OVS bridge      |
 
 ### Planes & Key Components
 
