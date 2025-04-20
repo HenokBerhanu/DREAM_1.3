@@ -45,7 +45,7 @@ curl -u onos:rocks -X POST \
   http://192.168.56.121:30181/onos/v1/applications/org.onosproject.openflow/active
 
 # and then check the port and ip is listening or not
-sudo   netstat -tulnp | grep 6653
+sudo netstat -tulnp | grep 6653
 
 # Recreate OVS Bridge (EdgeNode)
 sudo ovs-vsctl add-br br0

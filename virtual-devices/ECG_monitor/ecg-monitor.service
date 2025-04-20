@@ -1,0 +1,11 @@
+[Unit]
+Description=Smart ECG Monitor Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /etc/kubeedge/devices/ecg_monitor.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
