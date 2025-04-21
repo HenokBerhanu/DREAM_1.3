@@ -1,0 +1,248 @@
+# --- Bed Sensors ---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: bed-sensor-01
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: bed-sensor-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: bed-sensor-02
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: bed-sensor-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: bed-sensor-03
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: bed-sensor-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+
+# --- ECG Monitors ---
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: ecg-monitor-01
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: ecg-monitor-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: ecg-monitor-02
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: ecg-monitor-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: ecg-monitor-03
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: ecg-monitor-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+
+# --- Infusion Pumps ---
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: infusion-pump-01
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: infusion-pump-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: infusion-pump-02
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: infusion-pump-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: infusion-pump-03
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: infusion-pump-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+
+# --- Ventilators ---
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: ventilator-01
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: ventilator-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: ventilator-02
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: ventilator-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: ventilator-03
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: ventilator-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+
+# --- Wheelchairs ---
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: wheelchair-01
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: wheelchair-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: wheelchair-02
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: wheelchair-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode
+---
+apiVersion: devices.kubeedge.io/v1alpha2
+kind: Device
+metadata:
+  name: wheelchair-03
+  namespace: smart-hospital
+spec:
+  deviceModelRef:
+    name: wheelchair-model
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - edgenode

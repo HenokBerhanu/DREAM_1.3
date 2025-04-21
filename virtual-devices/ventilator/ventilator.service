@@ -1,0 +1,11 @@
+[Unit]
+Description=Smart Ventilator Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /etc/kubeedge/devices/ventilator.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

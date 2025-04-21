@@ -1,0 +1,11 @@
+[Unit]
+Description=Smart Infusion Pump Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /etc/kubeedge/devices/infusion_pump.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
