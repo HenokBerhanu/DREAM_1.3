@@ -1,9 +1,12 @@
-FROM python:3.9
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-CMD ["python", "enforcement_agent.py"]
+# Dockerfile for security_enforcement_agent
+FROM python:3.9-slim
 
-# docker build -t your-dockerhub-username/security-agent .
-# docker push your-dockerhub-username/security-agent
+WORKDIR /app
+
+# Install dependencies
+RUN pip install kafka-python requests schedule prometheus_client flask
+
+# Copy agent script
+COPY security_enforcement_agent.py .
+
+CMD ["python", "security_enforcement_agent.py"]

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: security-enforcement-agent
+  namespace: default
 spec:
   selector:
     matchLabels:
@@ -11,24 +12,34 @@ spec:
       labels:
         app: security-agent
     spec:
-      # Ensure this runs only on the edge node
+      hostNetwork: true
+      hostPID: true
       nodeSelector:
         edge.kubeedge.io/exclude-cni: "true"
       containers:
       - name: enforcement-agent
-        image: your-dockerhub-username/security-agent:latest
+        image: henok28/security-agent:latest  # ✅ use your latest pushed image
         imagePullPolicy: Always
+        securityContext:
+          privileged: true  # ✅ Required for OVS access
         env:
         - name: KAFKA_BROKER
           value: "kafka-service:9092"
         - name: ONOS_URL
-          value: "http://onos-service:8181"
+          value: "http://192.168.56.121:8181"
         - name: OVS_BRIDGE
           value: "br0"
         - name: ENFORCE_MODE
-          value: "onos"  # or "ovs" depending on use case
+          value: "onos"  # or "ovs"
         ports:
         - name: prometheus-metrics
           containerPort: 9000
         - name: flow-api
           containerPort: 5005
+        volumeMounts:
+        - name: dev-mount
+          mountPath: /dev
+      volumes:
+      - name: dev-mount
+        hostPath:
+          path: /dev
