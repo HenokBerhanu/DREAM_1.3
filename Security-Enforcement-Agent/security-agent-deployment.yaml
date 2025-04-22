@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: security-enforcement-agent
-  namespace: default
+  namespace: edge-agents
 spec:
   selector:
     matchLabels:
@@ -16,12 +16,30 @@ spec:
       hostPID: true
       nodeSelector:
         edge.kubeedge.io/exclude-cni: "true"
+      initContainers:       # ✅ Add veth creation here
+      - name: veth-setup
+        image: busybox
+        command:
+          - /bin/sh
+          - -c
+          - |
+            ip link add veth-br-sec type veth peer name veth-sec || true
+            ip link set veth-br-sec up
+            ip link set veth-sec up
+            ovs-vsctl add-port br0 veth-br-sec || true
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: dev-mount
+            mountPath: /dev
+          - name: ovsdb-socket
+            mountPath: /var/run/openvswitch
       containers:
       - name: enforcement-agent
-        image: henok28/security-agent:latest  # ✅ use your latest pushed image
+        image: henok28/security-enforcement-agent:v1
         imagePullPolicy: Always
         securityContext:
-          privileged: true  # ✅ Required for OVS access
+          privileged: true
         env:
         - name: KAFKA_BROKER
           value: "kafka-service:9092"
@@ -30,16 +48,21 @@ spec:
         - name: OVS_BRIDGE
           value: "br0"
         - name: ENFORCE_MODE
-          value: "onos"  # or "ovs"
+          value: "onos"
         ports:
-        - name: prometheus-metrics
+        - name: prom-metrics
           containerPort: 9000
         - name: flow-api
           containerPort: 5005
         volumeMounts:
         - name: dev-mount
           mountPath: /dev
+        - name: ovsdb-socket
+          mountPath: /var/run/openvswitch
       volumes:
       - name: dev-mount
         hostPath:
           path: /dev
+      - name: ovsdb-socket
+        hostPath:
+          path: /var/run/openvswitch
