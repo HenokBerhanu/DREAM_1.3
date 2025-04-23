@@ -71,5 +71,14 @@ vagrant@MasterNode:~$ kubectl get kafka -n kafka
 NAME            DESIRED KAFKA REPLICAS   DESIRED ZK REPLICAS   READY   METADATA STATE   WARNINGS
 kafka-cluster   3                        3                                              True
 
+kubectl delete pod kafka-cluster-zookeeper-0 kafka-cluster-zookeeper-2 kafka-cluster-zookeeper-1 -n kafka
+
+kubectl patch kafka kafka-cluster -n kafka --type='json' -p='[
+  {"op": "remove", "path": "/spec/zookeeper/template/pod/affinity"}
+]'
+
+kubectl delete pod -l strimzi.io/name=kafka-cluster-zookeeper -n kafka
+
+
 
 
