@@ -31,4 +31,14 @@ ip link show veth-sec
 sudo ovs-vsctl show
 
 
+# Deploy kafka
+
+
+
+
+
+
+
+
+
 
