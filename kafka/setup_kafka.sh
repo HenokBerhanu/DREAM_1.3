@@ -80,5 +80,56 @@ kubectl patch kafka kafka-cluster -n kafka --type='json' -p='[
 kubectl delete pod -l strimzi.io/name=kafka-cluster-zookeeper -n kafka
 
 
+kubectl run dns-check --rm -i -t \
+  --image=infoblox/dnstools \
+  --restart=Never \
+  --namespace=kafka \
+  --overrides='{
+    "spec": {
+      "nodeSelector": {
+        "kubernetes.io/hostname": "cloudnode"
+      },
+      "dnsPolicy": "ClusterFirst",
+      "containers": [{
+        "name": "dns-check",
+        "image": "infoblox/dnstools",
+        "command": ["sh"],
+        "stdin": true,
+        "tty": true
+      }]
+    }
+  }'
+
+nslookup kafka-cluster-zookeeper-0.kafka-cluster-zookeeper-nodes.kafka.svc.cluster.local
+
+kubectl patch kafka kafka-cluster -n kafka --type='merge' -p '{
+  "spec": {
+    "entityOperator": {
+      "template": {
+        "pod": {
+          "affinity": {
+            "nodeAffinity": {
+              "requiredDuringSchedulingIgnoredDuringExecution": {
+                "nodeSelectorTerms": [
+                  {
+                    "matchExpressions": [
+                      {
+                        "key": "kubernetes.io/hostname",
+                        "operator": "In",
+                        "values": ["cloudnode"]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+kubectl delete pod -n kafka -l strimzi.io/name=kafka-cluster-entity-operator
+kubectl get pod -n kafka -l strimzi.io/name=kafka-cluster-entity-operator -o wide
 
 
