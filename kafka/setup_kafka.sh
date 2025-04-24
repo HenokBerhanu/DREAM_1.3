@@ -131,5 +131,5 @@ kubectl patch kafka kafka-cluster -n kafka --type='merge' -p '{
 }'
 kubectl delete pod -n kafka -l strimzi.io/name=kafka-cluster-entity-operator
 kubectl get pod -n kafka -l strimzi.io/name=kafka-cluster-entity-operator -o wide
-
+kubectl 
 
