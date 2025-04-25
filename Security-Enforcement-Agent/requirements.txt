@@ -2,3 +2,4 @@ kafka-python
 requests
 schedule
 prometheus_client
+flask

@@ -131,5 +131,39 @@ kubectl patch kafka kafka-cluster -n kafka --type='merge' -p '{
 }'
 kubectl delete pod -n kafka -l strimzi.io/name=kafka-cluster-entity-operator
 kubectl get pod -n kafka -l strimzi.io/name=kafka-cluster-entity-operator -o wide
-kubectl 
+
+#############################################################
+# Verify the kafka setup
+
+# Check Kafka Cluster Status (via Strimzi)
+kubectl get kafka kafka-cluster -n kafka -o yaml | grep -A 5 status:
+
+# Port-forward Kafka Broker
+# This lets you interact with Kafka from your machine via localhost:9094
+kubectl -n kafka port-forward kafka-cluster-kafka-0 9094:9094
+
+# On the second terminal
+# Produce/Consume Test (using Kafka CLI)
+# Install Kafka CLI
+sudo apt-get install -y default-jre
+wget https://archive.apache.org/dist/kafka/3.6.1/kafka_2.13-3.6.1.tgz
+tar -xvzf kafka_2.13-3.6.1.tgz
+cd kafka_2.13-3.6.1
+
+# Create a test topic
+bin/kafka-topics.sh --bootstrap-server localhost:9094 --create --topic test-topic --partitions 1 --replication-factor 1
+
+# List topics:
+bin/kafka-topics.sh --bootstrap-server localhost:9094 --list
+
+# Start producer:
+bin/kafka-console-producer.sh --bootstrap-server localhost:9094 --topic test-topic
+# then write a few messages (hello, world).
+
+# Start consumer in the third terminal
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic test-topic --from-beginning
+# You should see the messages echoed.
+# Now you make sure that
+####################################################################
+
 

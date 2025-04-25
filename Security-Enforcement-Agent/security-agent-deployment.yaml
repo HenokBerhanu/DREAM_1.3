@@ -14,9 +14,10 @@ spec:
     spec:
       hostNetwork: true
       hostPID: true
+      terminationGracePeriodSeconds: 30
       nodeSelector:
         edge.kubeedge.io/exclude-cni: "true"
-      initContainers:       # ✅ Add veth creation here
+      initContainers:
       - name: veth-setup
         image: busybox
         command:
@@ -30,19 +31,19 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
-          - name: dev-mount
-            mountPath: /dev
-          - name: ovsdb-socket
-            mountPath: /var/run/openvswitch
+        - name: dev-mount
+          mountPath: /dev
+        - name: ovsdb-socket
+          mountPath: /var/run/openvswitch
       containers:
       - name: enforcement-agent
-        image: henok28/security-enforcement-agent:v1
+        image: henok28/security-enforcement-agent:v2
         imagePullPolicy: Always
         securityContext:
           privileged: true
         env:
         - name: KAFKA_BROKER
-          value: "kafka-service:9092"
+          value: "192.168.56.121:31896"
         - name: ONOS_URL
           value: "http://192.168.56.121:8181"
         - name: OVS_BRIDGE
@@ -54,6 +55,25 @@ spec:
           containerPort: 9000
         - name: flow-api
           containerPort: 5005
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        # livenessProbe:
+        #   httpGet:
+        #     path: /api/flows
+        #     port: 5005
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 10
+        # readinessProbe:
+        #   httpGet:
+        #     path: /api/flows
+        #     port: 5005
+        #   initialDelaySeconds: 15
+        #   periodSeconds: 10
         volumeMounts:
         - name: dev-mount
           mountPath: /dev
