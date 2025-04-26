@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-producer
+  namespace: kafka
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: cloudnode
+      restartPolicy: Never
+      containers:
+      - name: producer
+        image: quay.io/strimzi/kafka:0.39.0-kafka-3.6.0
+        command: ["/bin/bash","-c"]
+        args:
+        - |
+          # ----- build JKS trust-store with BOTH CAs -----
+          keytool -importcert -alias client-ca \
+                  -file /creds/ca.crt \
+                  -keystore /tmp/ca.jks \
+                  -storepass changeit -noprompt
+          keytool -importcert -alias cluster-ca \
+                  -file /cluster-ca/ca.crt \
+                  -keystore /tmp/ca.jks \
+                  -storepass changeit -noprompt
+
+          # ----- user key-store (PKCS#12) -----
+          openssl pkcs12 -export \
+                 -in /creds/user.crt -inkey /creds/user.key \
+                 -out /tmp/user.p12 -password pass:changeit -name kafka-user
+
+          # ----- client.properties -----
+          cat >/tmp/client.properties <<EOF
+          security.protocol=SSL
+          ssl.endpoint.identification.algorithm=
+          ssl.truststore.type=JKS
+          ssl.truststore.location=/tmp/ca.jks
+          ssl.truststore.password=changeit
+          ssl.keystore.type=PKCS12
+          ssl.keystore.location=/tmp/user.p12
+          ssl.keystore.password=changeit
+          EOF
+
+          # ----- send test message -----
+          echo "hello-microservices" | \
+          bin/kafka-console-producer.sh \
+              --bootstrap-server kafka-cluster-kafka-bootstrap.kafka:9093 \
+              --producer.config /tmp/client.properties \
+              --topic telemetry-test
+        volumeMounts:
+        - { name: creds,      mountPath: /creds,      readOnly: true }
+        - { name: cluster-ca, mountPath: /cluster-ca, readOnly: true }
+      volumes:
+      - { name: creds,      secret: { secretName: test-app } }
+      - { name: cluster-ca, secret: { secretName: kafka-cluster-cluster-ca-cert } }
