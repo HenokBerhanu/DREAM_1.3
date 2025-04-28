@@ -11,3 +11,13 @@ kubectl create namespace smart-hospital
 kubectl apply -f devices.yaml
 
 kubectl get devices -n smart-hospital -o wide
+
+
+
+
+
+
+
+
+
+

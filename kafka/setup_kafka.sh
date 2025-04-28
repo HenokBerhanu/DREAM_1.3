@@ -15,7 +15,8 @@ vagrant ssh-config MasterNode
 # coppy from the host to the edge node
 sudo scp -i /home/henok/DREAM_1.3/Kubernetes-deplyment/.vagrant/machines/MasterNode/virtualbox/private_key \
 -P 2222 \
-~/DREAM_1.3/kafka/kafka-values.yaml \
+~/DREAM_1.3/kafka/kafka-topics.yaml \
+~/DREAM_1.3/kafka/kafka-user-edgecollector.yaml \
 vagrant@127.0.0.1:/home/vagrant/
 
 kubectl patch kafka kafka-cluster -n kafka --type='merge' -p '
@@ -165,5 +166,25 @@ bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 --topic test-top
 # You should see the messages echoed.
 # Now you make sure that
 ####################################################################
+
+
+Step 2: create the Kafka topics that the architecture uses and a TLS-authenticated user for the edge Telemetry-Collector agent.
+# Kafka topics
+kubectl apply -f kafka-topics.yaml -n kafka
+
+# Verify
+kubectl get kafkatopics -n kafka
+
+# Apply and wait until the user is Ready
+kubectl apply -f kafka-user-edgecollector.yaml
+kubectl wait --for=condition=ready kafkauser/edge-collector -n kafka --timeout=120s
+
+# Retrieve the generated secret
+kubectl get secret edge-collector -n kafka
+
+# For inspection:
+kubectl get secret edge-collector -n kafka -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -subject
+
+
 
 

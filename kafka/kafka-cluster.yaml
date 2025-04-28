@@ -1,0 +1,57 @@
+# kafka-cluster-dual-listener.yaml
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka-cluster
+  namespace: kafka              # ← keep the same namespace
+spec:
+  kafka:
+    version: 3.8.0
+    replicas: 3
+
+    listeners:
+      # ── 1) Internal overlay listener ─────────────────────────────
+      - name: plain             # DNS: kafka-cluster-kafka-bootstrap.kafka:9092
+        port: 9092
+        type: internal
+        tls: false
+
+      # ── 2) Existing NodePort listener for edge-node agents ───────
+      - name: external          # Reachable at <cloud-node-IP>:9094
+        port: 9094
+        type: nodeport
+        tls: false
+
+    storage:
+      type: ephemeral           # keep as-is
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+
+# apiVersion: kafka.strimzi.io/v1beta2
+# kind: Kafka
+# metadata:
+#   name: kafka-cluster
+#   namespace: kafka
+# spec:
+#   kafka:
+#     version: 3.8.0
+#     replicas: 3
+#     listeners:
+#       - name: external
+#         port: 9094
+#         type: nodeport  # ⚠️ Allows access from outside the cluster
+#         tls: false
+#     storage:
+#       type: ephemeral
+#   zookeeper:
+#     replicas: 3
+#     storage:
+#       type: ephemeral
+#   entityOperator:
+#     topicOperator: {}
+#     userOperator: {}

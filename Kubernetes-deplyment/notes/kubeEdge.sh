@@ -168,11 +168,6 @@ sudo systemctl restart cloudcore
 sudo systemctl status cloudcore
 
 
-
-
-
-
-
 # sudo /usr/local/bin/cloudcore --config=/etc/kubeedge/config/cloudcore.yaml
 # # manually generate a default config:
 # sudo cloudcore --defaultconfig > /etc/kubeedge/config/cloudcore.yaml
@@ -214,7 +209,7 @@ sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
 
 
 sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
-        --token=5b961671582cfa4cdf2953a3f684856024022a14d1ed44611142dbaa743c123c.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDMxODA4MzV9.ZBqHHC7Fr_G2dv4_tRkeRkWVvrPHqioMzlLgA4Cp4uM \
+        --token=5b961671582cfa4cdf2953a3f684856024022a14d1ed44611142dbaa743c123c.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDU4OTk2NTB9.RgVbFcVHrIHCAFXBwPlQobZvmQWa7XrmTLyWnRFsB-M \
         --kubeedge-version=1.20.0 \
         --kube-config=/etc/kubernetes/admin.conf \
         --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
@@ -321,11 +316,6 @@ curl -v https://192.168.56.102:10350
 # On the MasterNode, try to reach EdgeCore:
 curl -v https://192.168.56.122:10350
 
-
-
-
-
-
 sudo rm -rf /etc/kubeedge
 
 sudo rm -rf /etc/kubeedge/
@@ -386,3 +376,6 @@ modules:
 # kubectl rollout restart deploy tigera-operator -n tigera-operator
 
 echo NWI5NjE2NzE1ODJjZmE0Y2RmMjk1M2EzZjY4NDg1NjAyNDAyMmExNGQxZWQ0NDYxMTE0MmRiYWE3NDNjMTIzYy5leUpoYkdjaU9pSklVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKbGVIQWlPakUzTkRNeU9UWTBPRFo5Lk5QMWpuM2xDbk5DRUVYME5BaHFQYk05UFhfVHBkcG9EOE5iZmozUTVEajQ= |base64 -d
+
+
+sudo keadm reset edge

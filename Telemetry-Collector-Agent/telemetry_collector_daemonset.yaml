@@ -2,17 +2,79 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: telemetry-collector
+  namespace: edge-agents          # ← same namespace you used for the security agent
 spec:
   selector:
     matchLabels:
-      app: telemetry-collector
+      app: telem-collector
   template:
     metadata:
       labels:
-        app: telemetry-collector
+        app: telem-collector
     spec:
+      # ------------------------------------------------------------------ #
+      #  Run ONLY on the edge node
+      # ------------------------------------------------------------------ #
+      nodeSelector:
+        kubernetes.io/hostname: edgenode            # (or whatever the Node name is)
+      tolerations:                                   # tolerate the taint KubeEdge adds
+      - key: "node-role.kubeedge.io/edge"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+      hostNetwork: true              # no CNI on EdgeNode; share host net-ns
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+
       containers:
       - name: collector
-        image: your-dockerhub-username/telemetry-collector
+        image: henok28/telemetry-collector:v1        # ⇐ image you just built/pushed
+        imagePullPolicy: Always
+        # ------------ runtime configuration purely via env-vars ------------ #
+        env:
+        - name: MQTT_BROKER_HOST      # Mosquitto lives on the edge node itself
+          value: "127.0.0.1"
+        - name: MQTT_BROKER_PORT
+          value: "1883"
+        - name: MQTT_TOPIC
+          value: "devices/#"
 
-# kubectl apply -f telemetry_collector_daemonset.yaml
+        # --- Kafka bootstrap points at the Strimzi bootstrap *service* ---- #
+        - name: KAFKA_BOOTSTRAP
+          value: "kafka-cluster-kafka-bootstrap.kafka:9093"
+        - name: TOPIC_RAW
+          value: "telemetry-raw"
+        - name: TOPIC_ALERTS
+          value: "telemetry-alerts"
+
+        # ------------ TLS materials from the Strimzi user Secret ---------- #
+        - name: KAFKA_SSL_CALOCATION
+          value: /certs/ca.crt
+        - name: KAFKA_SSL_CERTLOCATION
+          value: /certs/user.crt
+        - name: KAFKA_SSL_KEYLOCATION
+          value: /certs/user.key
+        # If the key is password-protected, Strimzi puts the pwd in user.password
+        - name: KAFKA_SSL_KEY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: edge-collector       # ← the Secret Strimzi generated
+              key: user.password
+
+        volumeMounts:
+        - name: kafka-certs
+          mountPath: /certs
+          readOnly: true
+
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+
+      volumes:
+      - name: kafka-certs
+        secret:
+          secretName: edge-collector
