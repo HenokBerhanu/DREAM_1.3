@@ -131,6 +131,24 @@ alerts_detected_created 1.7458881177970593e+09
 #######################
 
 
+# verify that your Telemetry Collector agent is indeed using the external listener (NodePort 9094) to talk to Kafka,
+# Check the environment variables of the Telemetry Collector Pod
+kubectl -n edge-agents describe pod $(kubectl -n edge-agents get pod -l app=telem-collector -o jsonpath='{.items[0].metadata.name}') \
+  | grep -A 10 "KAFKA_BOOTSTRAP"
+          # Output
+    #       KAFKA_BOOTSTRAP:          192.168.56.121:31896
+    #       KAFKA_SECURITY_PROTOCOL:  PLAINTEXT
+    #       TOPIC_RAW:                telemetry-raw
+    #       TOPIC_ALERTS:             telemetry-alerts
+    #     Mounts:
+    #       /dev from dev-mount (rw)
+    #       /var/run/openvswitch from ovsdb-socket (rw)
+    #       /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-nl2xh (ro)
+    # Conditions:
+    #   Type                        Status
+    #   PodReadyToStartContainers   True 
+
+# Check the logs of the collector container
 
 
 

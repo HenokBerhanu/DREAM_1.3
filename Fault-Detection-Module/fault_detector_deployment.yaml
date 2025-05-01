@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fault-detector
+  namespace: microservices
 spec:
   replicas: 1
   selector:
@@ -12,23 +13,60 @@ spec:
       labels:
         app: fault-detector
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: cloudnode
       containers:
       - name: fault-detector
-        image: your-dockerhub-username/fault-detector:latest
+        image: henok28/fault-detector:v2
+        imagePullPolicy: Always
+        env:
+        - name: KAFKA_BOOTSTRAP
+          value: "kafka-cluster-kafka-bootstrap.kafka:9092"
+        - name: TELEMETRY_TOPIC
+          value: "telemetry-raw"
+        - name: ALERT_TOPIC
+          value: "telemetry-alerts"
+        - name: ONOS_URL
+          value: "http://onos-service:8181/onos/v1"
+        - name: ONOS_AUTH_USER
+          value: "onos"
+        - name: ONOS_AUTH_PASS
+          value: "rocks"
+        - name: MODEL_PATH
+          value: "/models/autoencoder_model.h5"
+        - name: ERROR_THRESHOLD
+          value: "0.05"
+        - name: HTTP_PORT
+          value: "5004"
         ports:
-        - containerPort: 5004
+        - name: http
+          containerPort: 5004
+        volumeMounts:
+        - name: model-volume
+          mountPath: /models
+        resources:
+          requests:
+            cpu:    100m
+            memory: 256Mi
+          limits:
+            cpu:    500m
+            memory: 512Mi
+      volumes:
+      - name: model-volume
+        configMap:
+          name: fault-detector-model
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: fault-detector-service
+  name: fault-detector
+  namespace: microservices
 spec:
   selector:
     app: fault-detector
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 5004
       targetPort: 5004
   type: ClusterIP
-
-# kubectl apply -f fault_detector_deployment.yaml
