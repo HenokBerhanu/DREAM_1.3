@@ -71,3 +71,26 @@ kubectl -n kafka exec -it kafka-cluster-kafka-0 -- \
     TOPIC            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG            CONSUMER-ID
     telemetry-raw    0          1234            1234            0              fault-detector-...
 ########################################################################################################################
+
+#################################################
+# check the pretrained autoencoder model is working
+# Check the model presence
+kubectl -n microservices exec -it fault-detector-56766d7bdf-rtv2j -- ls /models
+
+# check the python script inside the container
+kubectl -n microservices exec -it fault-detector-56766d7bdf-rtv2j -- /bin/sh
+
+# python3
+>>> import numpy as np, tensorflow as tf
+>>> model = tf.keras.models.load_model('/models/autoencoder_model.h5', compile=False)
+>>> print("✅  Model loaded. Input shape:", model.input_shape)
+>>> sample = np.zeros((1,) + model.input_shape[1:])
+>>> out = model.predict(sample)
+>>> print("Output shape:", out.shape)
+>>> exit()
+
+# This confirms that,
+The ConfigMap-mounted /models/autoencoder_model.h5 is present.
+TensorFlow can load the HDF5 file (with compile=False so you avoid the mse lookup error).
+A zero-vector of the correct shape ((1,6)) runs through the network and produces a valid output of the same shape.
+#####################################################
