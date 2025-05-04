@@ -1,7 +1,7 @@
 # cd Fault-Detection-Module/
-# docker build -t henok/fault-detector:v4 .
-# docker tag henok/fault-detector:v4 henok28/fault-detector:v4
-# docker push henok28/fault-detector:v4
+# docker build -t henok/fault-detector:v6 .
+# docker tag henok/fault-detector:v6 henok28/fault-detector:v6
+# docker push henok28/fault-detector:v6
 
 vagrant ssh-config MasterNode
 
@@ -34,6 +34,7 @@ kubectl apply -f fault_detector_deployment.yaml
 
 # Verify the rollout
 kubectl -n microservices rollout status deploy/fault-detector
+kubectl -n microservices rollout restart deployment/fault-detector
 kubectl -n microservices get pods -l app=fault-detector -o wide
 
 # change the onos listening url in the deplyment yaml
@@ -114,3 +115,24 @@ kubectl -n kafka exec -it kafka-cluster-kafka-0 -- \
 # You should see JSON lines from your bed-sensor, ecg-monitor, etc.
 
 # Confirm the Fault Detector is consuming that topic by watching the logs:
+kubectl -n kafka exec -i kafka-cluster-kafka-0 -- \
+  bin/kafka-console-producer.sh \
+    --broker-list localhost:9092 \
+    --topic telemetry-raw <<EOF
+{"device_id":"ventilator_01","sensor_readings":[20,350,0,0,0,0],"status":"operational"}
+EOF
+
+# The on the other tern=minal
+kubectl -n microservices logs -f deployment/fault-detector
+
+# output
+    [Kafka] Subscribed to telemetry-raw
+    WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+    * Running on all addresses (0.0.0.0)
+    * Running on http://127.0.0.1:5004
+    * Running on http://10.244.1.7:5004
+    Press CTRL+C to quit
+    1/1 ━━━━━━━━━━━━━━━━━━━━ 0s 102ms/step
+    [FaultDetector] Reconstruction error = 61.833333
+    [Alert] Anomaly detected: {'device_id': 'ventilator_01', 'error': 61.833333333333336}
+    [ONOS] Flow update responded: 40

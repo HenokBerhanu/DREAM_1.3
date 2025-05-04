@@ -12,6 +12,18 @@ kubectl apply -f devices.yaml
 
 kubectl get devices -n smart-hospital -o wide
 
+sudo systemctl restart bed-sensor
+sudo systemctl restart ecg-monitor
+sudo systemctl restart infusion-pump
+sudo systemctl restart ventilator
+sudo systemctl restart wheelchair
+
+
+sudo systemctl daemon-reload
+sudo systemctl restart bed-sensor
+sudo systemctl status bed-sensor
+
+
 
 
 
