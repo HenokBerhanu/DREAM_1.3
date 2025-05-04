@@ -1,7 +1,7 @@
 # cd Fault-Detection-Module/
-# docker build -t henok/fault-detector:v3 .
-# docker tag henok/fault-detector:v3 henok28/fault-detector:v3
-# docker push henok28/fault-detector:v3
+# docker build -t henok/fault-detector:v4 .
+# docker tag henok/fault-detector:v4 henok28/fault-detector:v4
+# docker push henok28/fault-detector:v4
 
 vagrant ssh-config MasterNode
 
@@ -35,6 +35,12 @@ kubectl apply -f fault_detector_deployment.yaml
 # Verify the rollout
 kubectl -n microservices rollout status deploy/fault-detector
 kubectl -n microservices get pods -l app=fault-detector -o wide
+
+# change the onos listening url in the deplyment yaml
+kubectl -n microservices set env deployment/fault-detector \
+  ONOS_URL=http://onos-controller.micro-onos.svc.cluster.local:8181/onos/v1
+kubectl -n microservices rollout restart deployment/fault-detector
+
 
 #######################################################################
 # Smoke-test the HTTP endpoints
@@ -94,3 +100,17 @@ The ConfigMap-mounted /models/autoencoder_model.h5 is present.
 TensorFlow can load the HDF5 file (with compile=False so you avoid the mse lookup error).
 A zero-vector of the correct shape ((1,6)) runs through the network and produces a valid output of the same shape.
 #####################################################
+
+#################################################################
+# validate end-to-end fault detection
+# Verify that device telemetry is flowing into Kafka
+# Tail the “raw” topic to see real device messages from MQTT→Kafka:
+    # on the Kafka broker pod
+kubectl -n kafka exec -it kafka-cluster-kafka-0 -- \
+  bin/kafka-console-consumer.sh \
+    --bootstrap-server localhost:9092 \
+    --topic telemetry-raw \
+    --from-beginning
+# You should see JSON lines from your bed-sensor, ecg-monitor, etc.
+
+# Confirm the Fault Detector is consuming that topic by watching the logs:

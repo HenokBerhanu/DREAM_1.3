@@ -48,6 +48,7 @@ def healthz():
 
 @app.route("/metrics")
 def metrics():
+    # Expose Prometheus metrics
     data = generate_latest()
     return Response(data, mimetype=CONTENT_TYPE_LATEST)
 
@@ -74,6 +75,7 @@ producer = build_producer()
 
 # ----------------------- Load ML Model ----------------------------------
 print(f"[Model] Loading autoencoder from {MODEL_PATH} (inference only)")
+# compile=False to skip loss compilation
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 
 # ----------------------- Fault Detection Loop ---------------------------
@@ -85,9 +87,8 @@ def detect_faults():
             consumer = KafkaConsumer(
                 TELEMETRY_TOPIC,
                 bootstrap_servers=KAFKA_BOOTSTRAP,
-                # read raw bytes, we'll parse JSON manually
-                value_deserializer=lambda m: m,
-                auto_offset_reset='latest',
+                value_deserializer=lambda m: json.loads(m.decode('utf-8')),
+                auto_offset_reset='earliest',
                 enable_auto_commit=True,
                 group_id='fault-detector-group'
             )
@@ -102,27 +103,17 @@ def detect_faults():
         exit(1)
 
     for msg in consumer:
+        # Count every telemetry message
         telemetry_processed.inc()
-        raw = msg.value
-        try:
-            data = json.loads(raw.decode('utf-8'))
-        except Exception as e:
-            print(f"[Warning] Skipping non-JSON message: {raw!r}")
-            continue
-
+        data = msg.value
         readings = data.get('sensor_readings')
-        if readings is None or not isinstance(readings, (list, tuple)):
-            print("[Warning] Missing or invalid 'sensor_readings' in message", data)
+        if readings is None:
+            print("[Warning] Missing 'sensor_readings' in message", data)
             continue
 
         # Prepare input for autoencoder
         x = np.array(readings).reshape(1, -1)
-        try:
-            x_hat = model.predict(x)
-        except Exception as e:
-            print(f"[Error] Model inference failed: {e}")
-            continue
-
+        x_hat = model.predict(x)
         error = float(np.mean(np.abs(x - x_hat)))
         print(f"[FaultDetector] Reconstruction error = {error:.6f}")
 
@@ -132,11 +123,8 @@ def detect_faults():
             print("[Alert] Anomaly detected:", alert)
 
             # Publish to Kafka
-            try:
-                producer.send(ALERT_TOPIC, alert)
-                producer.flush()
-            except Exception as e:
-                print(f"[Kafka] Failed to send alert: {e}")
+            producer.send(ALERT_TOPIC, alert)
+            producer.flush()
 
             # Notify ONOS via REST
             try:
@@ -151,5 +139,7 @@ def detect_faults():
                 print(f"[ONOS] REST error: {e}")
 
 if __name__ == '__main__':
+    # Start detection in background
     threading.Thread(target=detect_faults, daemon=True).start()
+    # Run Flask HTTP server for health & metrics
     app.run(host='0.0.0.0', port=HTTP_PORT)

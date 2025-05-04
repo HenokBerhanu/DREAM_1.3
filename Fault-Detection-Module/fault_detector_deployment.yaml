@@ -27,7 +27,7 @@ spec:
         - name: ALERT_TOPIC
           value: "telemetry-alerts"
         - name: ONOS_URL
-          value: "http://onos-service:8181/onos/v1"
+          value: "http://onos-controller.micro-onos.svc.cluster.local:8181/onos/v1"
         - name: ONOS_AUTH_USER
           value: "onos"
         - name: ONOS_AUTH_PASS
