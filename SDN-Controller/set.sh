@@ -44,6 +44,9 @@ kubectl logs -n micro-onos -l app=onos --tail=50 -f
 curl -u onos:rocks -X POST \
   http://192.168.56.121:30181/onos/v1/applications/org.onosproject.openflow/active
 
+sudo ovs-vsctl set-controller br0 tcp:192.168.56.121:30653
+sudo ovs-vsctl get-controller br0
+
 # and then check the port and ip is listening or not
 sudo netstat -tulnp | grep 6653
 

@@ -4,7 +4,7 @@ Fault Detection Module for Smart Healthcare SDN Core Network
 - Subscribes to raw telemetry from Kafka
 - Runs Autoencoder model to detect anomalies
 - Publishes anomaly alerts to Kafka
-- Notifies ONOS controller via REST with full OpenFlow rule
+- Notifies ONOS controller via REST with a full OpenFlow rule
 - Exposes health (`/healthz`) and Prometheus metrics (`/metrics`) via Flask
 """
 import os
@@ -69,47 +69,47 @@ def build_producer():
     retries = 0
     while retries < 5:
         try:
-            producer = KafkaProducer(
+            p = KafkaProducer(
                 bootstrap_servers=KAFKA_BOOTSTRAP,
                 value_serializer=lambda v: json.dumps(v).encode('utf-8'),
             )
             print(f"[Kafka] Producer connected to {KAFKA_BOOTSTRAP}")
-            return producer
+            return p
         except kafka_errors.NoBrokersAvailable as e:
-            print(f"[Kafka] Producer connection failed ({retries+1}/5): {e}")
+            print(f"[Kafka] Producer connect failed ({retries+1}/5): {e}")
             retries += 1
             time.sleep(5)
-    print("[Kafka] Producer failed after retries.")
+    print("[Kafka] Producer failed after retries, exiting.")
     exit(1)
 
 producer = build_producer()
 
 # ----------------------- Load ML Model ----------------------------------
-print(f"[Model] Loading autoencoder from {MODEL_PATH} (inference only)")
+print(f"[Model] Loading autoencoder from {MODEL_PATH}")
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 
 # ----------------------- Fault Detection Loop ---------------------------
 def detect_faults():
-    # Set up Kafka consumer
+    # set up Kafka consumer
     retries = 0
     while retries < 5:
         try:
             consumer = KafkaConsumer(
                 TELEMETRY_TOPIC,
                 bootstrap_servers=KAFKA_BOOTSTRAP,
-                value_deserializer=lambda m: m,  # raw bytes
+                value_deserializer=lambda b: b,  # raw bytes
                 auto_offset_reset='latest',
                 enable_auto_commit=True,
                 group_id='fault-detector-group'
             )
-            print(f"[Kafka] Subscribed to {TELEMETRY_TOPIC}")
+            print(f"[Kafka] Subscribed to topic {TELEMETRY_TOPIC}")
             break
         except kafka_errors.NoBrokersAvailable as e:
             print(f"[Kafka] Consumer connect failed ({retries+1}/5): {e}")
             retries += 1
             time.sleep(5)
     else:
-        print("[Kafka] Consumer failed after retries.")
+        print("[Kafka] Consumer failed after retries, exiting.")
         exit(1)
 
     for msg in consumer:
@@ -136,59 +136,56 @@ def detect_faults():
         error = float(np.mean(np.abs(x - x_hat)))
         print(f"[FaultDetector] Reconstruction error = {error:.6f}")
 
-        if error > ERROR_THRESHOLD:
-            anomalies_detected.inc()
-            device_id = data.get('device_id')
-            alert = { "device_id": device_id, "error": error }
-            print("[Alert] Anomaly detected:", alert)
+        if error <= ERROR_THRESHOLD:
+            continue
 
-            # 1) Publish anomaly to Kafka
-            try:
-                producer.send(ALERT_TOPIC, alert)
-                producer.flush()
-            except Exception as e:
-                print(f"[Kafka] Failed to send alert: {e}")
+        anomalies_detected.inc()
+        device_id = data.get('device_id')
+        alert = {"device_id": device_id, "error": error}
+        print("[Alert] Anomaly detected:", alert)
 
-            # 2) Build flow rule
-            mac = data.get('mac') or data.get('device_mac')
-            if not mac:
-                print(f"[Warning] No MAC in telemetry for {device_id}, skipping ONOS update")
-                continue
+        # publish alert back to Kafka
+        try:
+            producer.send(ALERT_TOPIC, alert)
+            producer.flush()
+        except Exception as e:
+            print(f"[Kafka] Failed to send alert: {e}")
 
-            flow = {
-                "flows": [
-                    {
-                        "priority": 40000,
-                        "isPermanent": True,
-                        "deviceId": SWITCH_ID,
-                        "treatment": {
-                            "instructions": [
-                                { "type": "OUTPUT", "port": "QUEUE:1" }
-                            ]
-                        },
-                        "selector": {
-                            "criteria": [
-                                { "type": "ETH_SRC", "mac": mac }
-                            ]
-                        }
-                    }
+        # fetch MAC and build OpenFlow rule
+        mac = data.get('device_mac') or data.get('mac')
+        if not mac:
+            print(f"[Warning] No MAC for {device_id}, skipping ONOS update")
+            continue
+
+        # **DROP** rule (empty instructions = drop)
+        flow_rule = {
+            "priority": 40000,
+            "isPermanent": True,
+            "deviceId": SWITCH_ID,
+            "treatment": {
+                "instructions": []
+            },
+            "selector": {
+                "criteria": [
+                    {"type": "ETH_SRC", "mac": mac}
                 ]
             }
+        }
 
-            # 3) Post flow to ONOS
-            try:
-                resp = requests.post(
-                    f"{ONOS_URL}/flows/{SWITCH_ID}",
-                    auth=(ONOS_AUTH_USER, ONOS_AUTH_PASS),
-                    json=flow,
-                    timeout=5
-                )
-                print(f"[ONOS] Flow update responded: {resp.status_code} {resp.text}")
-            except requests.RequestException as e:
-                print(f"[ONOS] REST error: {e}")
+        # push rule to ONOS
+        try:
+            resp = requests.post(
+                f"{ONOS_URL}/flows/{SWITCH_ID}",
+                auth=(ONOS_AUTH_USER, ONOS_AUTH_PASS),
+                json=flow_rule,
+                timeout=5
+            )
+            print(f"[ONOS] Flow update: {resp.status_code} {resp.text}")
+        except requests.RequestException as e:
+            print(f"[ONOS] REST error: {e}")
 
 if __name__ == '__main__':
-    # Launch background thread
+    # fire off the detector in a background thread
     threading.Thread(target=detect_faults, daemon=True).start()
-    # Run HTTP server
+    # serve healthz & metrics
     app.run(host='0.0.0.0', port=HTTP_PORT)

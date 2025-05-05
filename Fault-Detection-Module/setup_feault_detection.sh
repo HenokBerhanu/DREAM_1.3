@@ -1,7 +1,7 @@
 # cd Fault-Detection-Module/
-# docker build -t henok/fault-detector:v6 .
-# docker tag henok/fault-detector:v6 henok28/fault-detector:v6
-# docker push henok28/fault-detector:v6
+# docker build -t henok/fault-detector:v8 .
+# docker tag henok/fault-detector:v8 henok28/fault-detector:v8
+# docker push henok28/fault-detector:v8
 
 vagrant ssh-config MasterNode
 
@@ -136,3 +136,59 @@ kubectl -n microservices logs -f deployment/fault-detector
     [FaultDetector] Reconstruction error = 61.833333
     [Alert] Anomaly detected: {'device_id': 'ventilator_01', 'error': 61.833333333333336}
     [ONOS] Flow update responded: 40
+#########################################################
+
+# Verify MQTT devices are publishing
+
+# On your edge node, watch the raw MQTT stream:
+mosquitto_sub -h localhost -p 1883 -t "devices/#" -v
+
+# Check the Telemetry Collector on the Edge
+# Find the container ID for the collector
+sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock ps -a \
+  | grep telemetry-collector
+
+# Stream its logs
+sudo crictl --runtime-endpoint unix:///run/containerd/containerd.sock logs \
+  -f <CONTAINER_ID>
+
+# Inspect the raw Kafka topic
+kubectl -n kafka exec -it kafka-cluster-kafka-0 -- \
+  bin/kafka-console-consumer.sh \
+    --bootstrap-server localhost:9092 \
+    --topic telemetry-raw \
+    --from-beginning
+
+# do the same for the alerts topic:
+kubectl -n kafka exec -it kafka-cluster-kafka-0 -- \
+  bin/kafka-console-consumer.sh \
+    --bootstrap-server localhost:9092 \
+    --topic telemetry-alerts \
+    --from-beginning
+
+# Check Fault Detector health & metrics
+# Port-forward if you need:
+kubectl -n microservices port-forward deploy/fault-detector 5004:5004 &
+
+            # then
+            curl http://127.0.0.1:5004/healthz
+            # → {"status":"ok"}
+
+            curl http://127.0.0.1:5004/metrics | grep fault_detector
+            # → fault_detector_telemetry_processed_total  X.X
+            # → fault_detector_anomalies_detected_total  0.0
+
+# Inject an anomaly and watch the pipeline
+# Publish a “bad” reading to Kafka:
+kubectl -n kafka exec -i kafka-cluster-kafka-0 -- \
+  bin/kafka-console-producer.sh \
+    --broker-list localhost:9092 \
+    --topic telemetry-raw <<EOF
+{"device_id":"ventilator_01","device_mac":"00:11:22:33:44:01","sensor_readings":[999,9999,0,0,0,0],"status":"operational"}
+EOF
+
+# Verify ONOS flow was pushed
+# confirm the new flow rule on ONOS via its REST API:
+curl -u onos:rocks \
+  http://192.168.56.121:30181/onos/v1/flows/of:0000000000000001
+

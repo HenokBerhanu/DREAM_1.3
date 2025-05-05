@@ -23,6 +23,8 @@ sudo systemctl daemon-reload
 sudo systemctl restart bed-sensor
 sudo systemctl status bed-sensor
 
+sudo systemctl status bed-sensor ecg-monitor infusion-pump ventilator wheelchair
+
 
 
 
