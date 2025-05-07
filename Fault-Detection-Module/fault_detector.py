@@ -90,102 +90,105 @@ model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 
 # ----------------------- Fault Detection Loop ---------------------------
 def detect_faults():
-    # set up Kafka consumer
-    retries = 0
-    while retries < 5:
+    while True:
+        # Initialize consumer
         try:
             consumer = KafkaConsumer(
                 TELEMETRY_TOPIC,
                 bootstrap_servers=KAFKA_BOOTSTRAP,
-                value_deserializer=lambda b: b,  # raw bytes
+                value_deserializer=lambda b: b,
                 auto_offset_reset='latest',
                 enable_auto_commit=True,
                 group_id='fault-detector-group'
             )
             print(f"[Kafka] Subscribed to topic {TELEMETRY_TOPIC}")
-            break
         except kafka_errors.NoBrokersAvailable as e:
-            print(f"[Kafka] Consumer connect failed ({retries+1}/5): {e}")
-            retries += 1
+            print(f"[Kafka] Consumer connect failed: {e}, retrying in 5s...")
             time.sleep(5)
-    else:
-        print("[Kafka] Consumer failed after retries, exiting.")
-        exit(1)
-
-    for msg in consumer:
-        telemetry_processed.inc()
-        raw = msg.value
-        try:
-            data = json.loads(raw.decode('utf-8'))
-        except Exception:
-            print(f"[Warning] Skipping non-JSON message: {raw!r}")
             continue
 
-        readings = data.get('sensor_readings')
-        if not isinstance(readings, (list, tuple)):
-            print("[Warning] Missing or invalid 'sensor_readings' in", data)
-            continue
-
-        x = np.array(readings).reshape(1, -1)
         try:
-            x_hat = model.predict(x)
+            for msg in consumer:
+                telemetry_processed.inc()
+                raw = msg.value
+                try:
+                    data = json.loads(raw.decode('utf-8'))
+                except Exception:
+                    print(f"[Warning] Skipping non-JSON message: {raw!r}")
+                    continue
+
+                readings = data.get('sensor_readings')
+                if not isinstance(readings, (list, tuple)):
+                    print("[Warning] Missing or invalid 'sensor_readings' in", data)
+                    continue
+
+                x = np.array(readings).reshape(1, -1)
+                try:
+                    x_hat = model.predict(x)
+                except Exception as e:
+                    print(f"[Error] Model inference failed: {e}")
+                    continue
+
+                error = float(np.mean(np.abs(x - x_hat)))
+                print(f"[FaultDetector] Reconstruction error = {error:.6f}")
+
+                if error <= ERROR_THRESHOLD:
+                    continue
+
+                anomalies_detected.inc()
+                device_id = data.get('device_id')
+                alert = {"device_id": device_id, "error": error}
+                print("[Alert] Anomaly detected:", alert)
+
+                # 1) Publish alert to Kafka
+                try:
+                    producer.send(ALERT_TOPIC, alert)
+                    producer.flush()
+                except Exception as e:
+                    print(f"[Kafka] Failed to send alert: {e}")
+
+                # 2) Prepare OpenFlow rule
+                mac = data.get('device_mac') or data.get('mac')
+                if not mac:
+                    print(f"[Warning] No MAC for {device_id}, skipping ONOS update")
+                    continue
+
+                flow_rule = {
+                    "priority": 40000,
+                    "isPermanent": True,
+                    "deviceId": SWITCH_ID,
+                    "treatment": {"instructions": [
+                        {"type": "OUTPUT", "port": "CONTROLLER"}
+                    ]},
+                    "selector": {"criteria": [
+                        {"type": "ETH_SRC", "mac": mac}
+                    ]}
+                }
+
+                # 3) Post flow to ONOS
+                try:
+                    resp = requests.post(
+                        f"{ONOS_URL}/flows/{SWITCH_ID}",
+                        auth=(ONOS_AUTH_USER, ONOS_AUTH_PASS),
+                        json=flow_rule,
+                        timeout=5
+                    )
+                    print(f"[ONOS] Flow update: {resp.status_code} {resp.text}")
+                except requests.RequestException as e:
+                    print(f"[ONOS] REST error: {e}")
+
+        except RuntimeError as re:
+            print(f"[FaultDetector] Consumer error: {re}, restarting consumer...")
+            consumer.close()
+            time.sleep(5)
+            continue
         except Exception as e:
-            print(f"[Error] Model inference failed: {e}")
+            print(f"[FaultDetector] Unexpected error: {e}, restarting consumer...")
+            try: consumer.close()
+            except: pass
+            time.sleep(5)
             continue
-
-        error = float(np.mean(np.abs(x - x_hat)))
-        print(f"[FaultDetector] Reconstruction error = {error:.6f}")
-
-        if error <= ERROR_THRESHOLD:
-            continue
-
-        anomalies_detected.inc()
-        device_id = data.get('device_id')
-        alert = {"device_id": device_id, "error": error}
-        print("[Alert] Anomaly detected:", alert)
-
-        # publish alert back to Kafka
-        try:
-            producer.send(ALERT_TOPIC, alert)
-            producer.flush()
-        except Exception as e:
-            print(f"[Kafka] Failed to send alert: {e}")
-
-        # fetch MAC and build OpenFlow rule
-        mac = data.get('device_mac') or data.get('mac')
-        if not mac:
-            print(f"[Warning] No MAC for {device_id}, skipping ONOS update")
-            continue
-
-        # **DROP** rule (empty instructions = drop)
-        flow_rule = {
-            "priority": 40000,
-            "isPermanent": True,
-            "deviceId": SWITCH_ID,
-            "treatment": {
-                "instructions": []
-            },
-            "selector": {
-                "criteria": [
-                    {"type": "ETH_SRC", "mac": mac}
-                ]
-            }
-        }
-
-        # push rule to ONOS
-        try:
-            resp = requests.post(
-                f"{ONOS_URL}/flows/{SWITCH_ID}",
-                auth=(ONOS_AUTH_USER, ONOS_AUTH_PASS),
-                json=flow_rule,
-                timeout=5
-            )
-            print(f"[ONOS] Flow update: {resp.status_code} {resp.text}")
-        except requests.RequestException as e:
-            print(f"[ONOS] REST error: {e}")
 
 if __name__ == '__main__':
-    # fire off the detector in a background thread
     threading.Thread(target=detect_faults, daemon=True).start()
-    # serve healthz & metrics
     app.run(host='0.0.0.0', port=HTTP_PORT)

@@ -44,6 +44,12 @@ kubectl logs -n micro-onos -l app=onos --tail=50 -f
 curl -u onos:rocks -X POST \
   http://192.168.56.121:30181/onos/v1/applications/org.onosproject.openflow/active
 
+sudo systemctl status bed-sensor ecg-monitor infusion-pump ventilator wheelchair
+
+sudo systemctl restart bed-sensor ecg-monitor infusion-pump ventilator wheelchair
+sudo systemctl status bed-sensor ecg-monitor infusion-pump ventilator wheelchair
+
+
 sudo ovs-vsctl set-controller br0 tcp:192.168.56.121:30653
 sudo ovs-vsctl get-controller br0
 
@@ -121,3 +127,16 @@ vagrant@MasterNode:~$ kubectl logs -n micro-onos -l app=onos | grep -i "connecte
 04:55:19.335 INFO  [DistributedGroupStore] Group AUDIT: Setting device of:0000000000000001 initial AUDIT completed
 vagrant@MasterNode:~$ 
 #####################################################################################################
+
+
+sudo ovs-vsctl show
+2c4c62ba-4679-47d8-a701-6745c50ddb64
+    Bridge br0
+        Controller "tcp:192.168.56.121:6653"
+            is_connected: true
+        Port veth0
+            Interface veth0
+        Port br0
+            Interface br0
+                type: internal
+    ovs_version: "2.17.9"

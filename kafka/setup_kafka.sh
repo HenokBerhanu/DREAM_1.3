@@ -185,6 +185,9 @@ kubectl get secret edge-collector -n kafka
 # For inspection:
 kubectl get secret edge-collector -n kafka -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -subject
 
+kubectl get kafka kafka-cluster -n kafka -o yaml
+
+
 
 
 

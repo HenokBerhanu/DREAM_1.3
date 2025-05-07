@@ -1,0 +1,117 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kafka.strimzi.io/v1beta2","kind":"Kafka","metadata":{"annotations":{},"name":"kafka-cluster","namespace":"kafka"},"spec":{"entityOperator":{"topicOperator":{},"userOperator":{}},"kafka":{"listeners":[{"name":"plain","port":9092,"tls":false,"type":"internal"},{"name":"external","port":9094,"tls":false,"type":"nodeport"}],"replicas":3,"storage":{"type":"ephemeral"},"version":"3.8.0"},"zookeeper":{"replicas":3,"storage":{"type":"ephemeral"}}}}
+    strimzi.io/manual-rebalancing: "true"
+  creationTimestamp: "2025-04-23T00:32:37Z"
+  generation: 7
+  name: kafka-cluster
+  namespace: kafka
+  resourceVersion: "1380594"
+  uid: 415d99ce-4f88-4283-aa32-394c7476379f
+spec:
+  entityOperator:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                  - cloudnode
+    topicOperator: {}
+    userOperator: {}
+  kafka:
+    config:
+      advertised.listeners: internal://kafka-cluster-kafka-bootstrap:9093,external://192.168.56.121:31896
+      inter.broker.listener.name: internal
+      listener.security.protocol.map: internal:SSL,external:PLAINTEXT
+    listeners:
+    - name: plain
+      port: 9092
+      tls: false
+      type: internal
+    - name: external
+      port: 9094
+      tls: false
+      type: nodeport
+    replicas: 3
+    storage:
+      type: ephemeral
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                  - cloudnode
+    version: 3.8.0
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                  - cloudnode
+status:
+  clusterId: HBmDAAWUSMSk_jGmUMYJMA
+  conditions:
+  - lastTransitionTime: "2025-05-07T15:32:15.641101003Z"
+    message: Support for ZooKeeper-based Apache Kafka clusters will be removed in
+      the next Strimzi release (0.46.0). Please migrate to KRaft.
+    reason: ZooKeeperRemoval
+    status: "True"
+    type: Warning
+  - lastTransitionTime: "2025-05-07T15:32:24.157764299Z"
+    message: default.replication.factor option is not configured. It defaults to 1
+      which does not guarantee reliability and availability. You should configure
+      this option in .spec.kafka.config.
+    reason: KafkaDefaultReplicationFactor
+    status: "True"
+    type: Warning
+  - lastTransitionTime: "2025-05-07T15:32:24.157814128Z"
+    message: min.insync.replicas option is not configured. It defaults to 1 which
+      does not guarantee reliability and availability. You should configure this option
+      in .spec.kafka.config.
+    reason: KafkaMinInsyncReplicas
+    status: "True"
+    type: Warning
+  - lastTransitionTime: "2025-05-07T15:33:24.908668027Z"
+    status: "True"
+    type: Ready
+  kafkaMetadataState: ZooKeeper
+  kafkaVersion: 3.8.0
+  listeners:
+  - addresses:
+    - host: kafka-cluster-kafka-bootstrap.kafka.svc
+      port: 9092
+    bootstrapServers: kafka-cluster-kafka-bootstrap.kafka.svc:9092
+    name: plain
+  - addresses:
+    - host: 192.168.56.121
+      port: 31896
+    bootstrapServers: 192.168.56.121:31896
+    name: external
+  observedGeneration: 7
+  operatorLastSuccessfulVersion: 0.45.0
+  registeredNodeIds:
+  - 0
+  - 1
+  - 2
