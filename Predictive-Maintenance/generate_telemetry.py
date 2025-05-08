@@ -6,8 +6,8 @@ import time
 import os
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-OUT_CSV = os.getenv("OUT_CSV", "/telemetry.csv")
-N_PER_TYPE = int(os.getenv("N_PER_TYPE", "500"))
+OUT_CSV = os.getenv("OUT_CSV", "/home/henok/DREAM_1.3/Predictive-Maintenance/models/telemetry.csv")
+N_PER_TYPE = int(os.getenv("N_PER_TYPE", "1000"))
 
 # ── DEVICE SPECS ──────────────────────────────────────────────────────────
 # Each generator returns a list of 6 normalized readings

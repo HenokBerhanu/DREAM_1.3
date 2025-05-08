@@ -18,11 +18,12 @@ pip install \
   tensorflow
 
 sudo chmod +x generate_telemetry.py
-export OUT_CSV=~/telemetry.csv
-export N_PER_TYPE=500
+export OUT_CSV=/home/henok/DREAM_1.3/Predictive-Maintenance/models/telemetry.csv
+export N_PER_TYPE=1000
 python3 generate_telemetry.py
 
-python3 train_autoencoder_pm.py
+sudo chmod +x generate_model.py
+python3 generate_model.py
 
 # coppy the model to the master node
 sudo scp -i /home/henok/DREAM_1.3/Kubernetes-deplyment/.vagrant/machines/MasterNode/virtualbox/private_key \
