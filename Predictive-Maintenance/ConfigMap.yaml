@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: maintenance-model-config
+  namespace: microservices
+data:
+  autoencoder_model.h5: |-
+    # Include your base64-encoded model here or mount from a shared PVC.

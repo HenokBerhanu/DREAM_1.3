@@ -1,7 +1,6 @@
 flask
 numpy
-pandas
-scikit-learn
 tensorflow
 kafka-python
 requests
+prometheus_client

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: predictive-maintenance
+  namespace: microservices
 spec:
   replicas: 2
   selector:
@@ -15,25 +16,41 @@ spec:
       containers:
       - name: predictive-maintenance
         image: your-dockerhub-username/predictive-maintenance:latest
-        ports:
-        - containerPort: 5001
+        imagePullPolicy: Always
         env:
-        - name: KAFKA_BROKER
-          value: "kafka-service:9092"
+        - name: KAFKA_BOOTSTRAP
+          value: "kafka-cluster-kafka-bootstrap.kafka:9092"
+        - name: INPUT_TOPIC
+          value: "telemetry-raw"
+        - name: ALERT_TOPIC
+          value: "maintenance-alerts"
+        - name: ONOS_URL
+          value: "http://onos-service.micro-onos.svc.cluster.local:8181/onos/v1"
         - name: MODEL_PATH
-          value: "/app/autoencoder_model.h5"
+          value: "/models/autoencoder_model.h5"
+        - name: ERROR_THRESHOLD
+          value: "0.389"
+        - name: HTTP_PORT
+          value: "5001"
+        - name: SWITCH_ID
+          value: "of:0000000000000001"
+        volumeMounts:
+        - name: model-volume
+          mountPath: /models
+      volumes:
+      - name: model-volume
+        configMap:
+          name: maintenance-model-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: predictive-maintenance-service
+  namespace: microservices
 spec:
   selector:
     app: predictive-maintenance
   ports:
-    - protocol: TCP
-      port: 5001
+    - port: 5001
       targetPort: 5001
   type: ClusterIP
-
-# kubectl apply -f predictive_maintenance_deployment.yaml

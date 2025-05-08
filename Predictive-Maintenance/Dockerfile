@@ -1,23 +1,21 @@
-# Use Python as the base image
-FROM python:3.9
+FROM python:3.9-slim
 
-# Set working directory
+# ensure logs aren’t buffered
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-# Copy application files
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
+ && rm -rf /root/.cache/pip
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application
+# add a non-root user
+RUN groupadd app && useradd -g app app
 COPY . .
+USER app
 
-# Expose the service port
 EXPOSE 5001
 
-# Run the application
-CMD ["python", "predictive_maintenance.py"]
+ENTRYPOINT ["python", "predictive_maintenance.py"]
 
-# docker build -t your-dockerhub-username/predictive-maintenance:latest .
-# docker push your-dockerhub-username/predictive-maintenance:latest
+HEALTHCHECK --interval=30s CMD curl --fail http://localhost:5001/healthz || exit 1

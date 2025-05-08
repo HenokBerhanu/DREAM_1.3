@@ -140,3 +140,7 @@ sudo ovs-vsctl show
             Interface br0
                 type: internal
     ovs_version: "2.17.9"
+
+
+NODE_IP=192.168.56.121  
+curl -u onos:rocks http://$NODE_IP:30181/onos/v1/flows/of:0000000000000001 | jq .
