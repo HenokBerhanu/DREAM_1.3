@@ -46,7 +46,7 @@ spec:
         - name: SWITCH_ID
           value: "of:0000000000000001"
         volumeMounts:
-        - name: model-pvc
+        - name: model-volume
           mountPath: /models
         ports:
         - containerPort: 5001
@@ -73,9 +73,9 @@ spec:
           periodSeconds: 10
           failureThreshold: 3
       volumes:
-      - name: model-pvc
-        persistentVolumeClaim:
-          claimName: predictive-maintenance-model-pvc
+      - name: model-volume
+        configMap:
+          name: predictive-maintenance-model
 ---
 apiVersion: v1
 kind: Service

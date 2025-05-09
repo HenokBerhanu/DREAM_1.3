@@ -18,22 +18,16 @@ from kafka import KafkaConsumer, KafkaProducer, errors as kafka_errors
 from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
 
 # ---- Configuration via Environment ----
-KAFKA_BOOTSTRAP = os.getenv(
-    "KAFKA_BOOTSTRAP",
-    "kafka-cluster-kafka-bootstrap.kafka:9092"
-)
-INPUT_TOPIC     = os.getenv("INPUT_TOPIC", "telemetry-raw")
-ALERT_TOPIC     = os.getenv("ALERT_TOPIC", "maintenance-alerts")
-ONOS_URL        = os.getenv(
-    "ONOS_URL",
-    "http://onos-service.micro-onos.svc.cluster.local:8181/onos/v1"
-)
-ONOS_AUTH_USER  = os.getenv("ONOS_AUTH_USER", "onos")
-ONOS_AUTH_PASS  = os.getenv("ONOS_AUTH_PASS", "rocks")
-MODEL_PATH      = os.getenv("MODEL_PATH", "/models/autoencoder_model.h5")
-ERROR_THRESHOLD = float(os.getenv("ERROR_THRESHOLD", "0.389"))
-HTTP_PORT       = int(os.getenv("HTTP_PORT", "5001"))
-SWITCH_ID       = os.getenv("SWITCH_ID", "of:0000000000000001")
+KAFKA_BOOTSTRAP   = os.getenv("KAFKA_BOOTSTRAP", "kafka-cluster-kafka-bootstrap.kafka:9092")
+INPUT_TOPIC       = os.getenv("INPUT_TOPIC", "telemetry-raw")
+ALERT_TOPIC       = os.getenv("ALERT_TOPIC", "maintenance-alerts")
+ONOS_URL          = os.getenv("ONOS_URL", "http://onos-service.micro-onos.svc.cluster.local:8181/onos/v1")
+ONOS_AUTH_USER    = os.getenv("ONOS_AUTH_USER", "onos")
+ONOS_AUTH_PASS    = os.getenv("ONOS_AUTH_PASS", "rocks")
+MODEL_PATH        = os.getenv("MODEL_PATH", "/models/autoencoder_model.h5")
+ERROR_THRESHOLD   = float(os.getenv("ERROR_THRESHOLD", "0.05"))
+HTTP_PORT         = int(os.getenv("HTTP_PORT", "5001"))
+SWITCH_ID         = os.getenv("SWITCH_ID", "of:0000000000000001")
 
 # ---- Prometheus Metrics ----
 telemetry_processed = Counter(
@@ -70,7 +64,7 @@ def predict():
     status = 'anomaly' if error > ERROR_THRESHOLD else 'normal'
     return jsonify(status=status, error_score=error)
 
-# ---- Kafka Producer ----
+# ---- Kafka Producer Setup ----
 def build_producer():
     retries = 0
     while retries < 5:
@@ -81,14 +75,15 @@ def build_producer():
             )
             print(f"[Kafka] Producer connected to {KAFKA_BOOTSTRAP}")
             return p
-        except kafka_errors.NoBrokersAvailable:
+        except kafka_errors.NoBrokersAvailable as e:
             retries += 1
+            print(f"[Kafka] Producer connect failed ({retries}/5): {e}, retrying…")
             time.sleep(5)
-    raise RuntimeError("Failed to connect Kafka producer")
+    raise RuntimeError("Failed to connect Kafka producer after retries")
 
 producer = build_producer()
 
-# ---- Load ML Model ----
+# ---- Load Model ----
 print(f"[Model] Loading autoencoder from {MODEL_PATH}")
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 
@@ -121,31 +116,34 @@ def consume_and_predict():
         alert = {"device_id": device_id, "error": error}
         print("[Alert] Predictive anomaly detected:", alert)
 
-        # 1) publish alert to Kafka
-        producer.send(ALERT_TOPIC, alert)
-        producer.flush()
+        # publish alert to Kafka
+        try:
+            producer.send(ALERT_TOPIC, alert)
+            producer.flush()
+        except Exception as e:
+            print(f"[Kafka] Failed to send alert: {e}")
 
-        # 2) build OpenFlow rule
-        mac = data.get('device_mac')
-        if not mac:
-            print(f"[Warning] No MAC for {device_id}, skipping ONOS update")
-            continue
-
+        # notify SDN controller: include priority at top level
         flow = {
-            "priority":   40000,
+            "priority": 40000,
             "isPermanent": True,
-            "deviceId":   SWITCH_ID,
-            "treatment":  {"instructions":[{"type":"OUTPUT","port":"CONTROLLER"}]},
-            "selector":   {"criteria":[{"type":"ETH_SRC","mac":mac}]}
+            "deviceId": SWITCH_ID,
+            "treatment": {
+                "instructions": [
+                    {"type": "OUTPUT", "port": "CONTROLLER"}
+                ]
+            },
+            "selector": {
+                "criteria": [
+                    {"type": "ETH_SRC", "mac": data.get('device_mac')}
+                ]
+            }
         }
-        payload = {"flows": [flow]}
-
-        # 3) post to ONOS
         try:
             resp = requests.post(
                 f"{ONOS_URL}/flows/{SWITCH_ID}",
                 auth=(ONOS_AUTH_USER, ONOS_AUTH_PASS),
-                json=payload,
+                json=flow,
                 timeout=5
             )
             print(f"[ONOS] Flow update responded: {resp.status_code} {resp.text}")

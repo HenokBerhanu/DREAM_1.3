@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: predictive-maintenance-model-pvc
+  namespace: microservices
+spec:
+  accessModes:
+    - ReadOnlyMany        # or ReadWriteOnce, depending on your storage
+  resources:
+    requests:
+      storage: 1Mi         # just needs to hold the .h5 file
+  #storageClassName: <your-storage-class>  # omit if you want the default
