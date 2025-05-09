@@ -26,23 +26,23 @@ sudo chmod +x generate_model.py
 python3 generate_model.py
 
 # coppy the model to the master node
-sudo scp -i /home/henok/DREAM_1.3/Kubernetes-deplyment/.vagrant/machines/MasterNode/virtualbox/private_key \
--P 2222 \
-~/DREAM_1.3/Predictive-Maintenance/predictive_model.h5 \
-vagrant@127.0.0.1:/home/vagrant/
+          # sudo scp -i /home/henok/DREAM_1.3/Kubernetes-deplyment/.vagrant/machines/MasterNode/virtualbox/private_key \
+          # -P 2222 \
+          # ~/DREAM_1.3/Predictive-Maintenance/models/autoencoder_model.h5 \
+          # vagrant@127.0.0.1:/home/vagrant/
 
 # create microservices ns
 kubectl create ns microservices
 
 # Create the ConfigMap for your trained model
-kubectl -n microservices create configmap fault-detector-model \
-  --from-file=predictive_model.h5=/home/vagrant/predictive_model.h5 \
-  --dry-run=client -o yaml | kubectl apply -f -
+          # kubectl -n microservices create configmap predictive-maintenance-config \
+          #   --from-file=autoencoder_model.h5=/home/vagrant/autoencoder_model.h5 \
+          #   --dry-run=client -o yaml | kubectl apply -f -
 
 # Apply the Deployment & Service
-kubectl apply -f fault_detector_deployment.yaml
+kubectl apply -f predictive_maintenance_deployment.yaml
 
 # Verify the rollout
-kubectl -n microservices rollout status deploy/fault-detector
-kubectl -n microservices rollout restart deployment/fault-detector
-kubectl -n microservices get pods -l app=fault-detector -o wide
+kubectl -n microservices rollout status deploy/predictive-maintenance
+kubectl -n microservices rollout restart deployment/predictive-maintenance
+kubectl -n microservices get pods -l app=predictive-maintenance -o wide

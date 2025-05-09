@@ -37,6 +37,14 @@ kubectl -n microservices rollout status deploy/fault-detector
 kubectl -n microservices rollout restart deployment/fault-detector
 kubectl -n microservices get pods -l app=fault-detector -o wide
 
+# Check onos service port availability
+kubectl -n micro-onos get svc onos-service -o wide
+kubectl -n micro-onos describe svc onos-service
+
+# check the listenning url of onos is set correctly in the pod
+POD=$(kubectl -n microservices get pod -l app=fault-detector -o jsonpath='{.items[0].metadata.name}')
+kubectl -n microservices exec -it $POD -- env | grep ONOS_URL
+
 # change the onos listening url in the deplyment yaml
 kubectl -n microservices set env deployment/fault-detector \
   ONOS_URL=http://onos-controller.micro-onos.svc.cluster.local:8181/onos/v1

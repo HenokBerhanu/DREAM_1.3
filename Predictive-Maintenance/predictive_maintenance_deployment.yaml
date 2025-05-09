@@ -5,6 +5,11 @@ metadata:
   namespace: microservices
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: predictive-maintenance
@@ -13,10 +18,12 @@ spec:
       labels:
         app: predictive-maintenance
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: cloudnode
       containers:
       - name: predictive-maintenance
-        image: your-dockerhub-username/predictive-maintenance:latest
-        imagePullPolicy: Always
+        image: henok28/predictive-maintenance:v1.0   # pin to a real tag
+        imagePullPolicy: IfNotPresent
         env:
         - name: KAFKA_BOOTSTRAP
           value: "kafka-cluster-kafka-bootstrap.kafka:9092"
@@ -26,6 +33,10 @@ spec:
           value: "maintenance-alerts"
         - name: ONOS_URL
           value: "http://onos-service.micro-onos.svc.cluster.local:8181/onos/v1"
+        - name: ONOS_AUTH_USER
+          value: "onos"
+        - name: ONOS_AUTH_PASS
+          value: "rocks"
         - name: MODEL_PATH
           value: "/models/autoencoder_model.h5"
         - name: ERROR_THRESHOLD
@@ -35,22 +46,47 @@ spec:
         - name: SWITCH_ID
           value: "of:0000000000000001"
         volumeMounts:
-        - name: model-volume
+        - name: model-pvc
           mountPath: /models
+        ports:
+        - containerPort: 5001
+          name: http
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
       volumes:
-      - name: model-volume
-        configMap:
-          name: maintenance-model-config
+      - name: model-pvc
+        persistentVolumeClaim:
+          claimName: predictive-maintenance-model-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: predictive-maintenance-service
+  name: predictive-maintenance
   namespace: microservices
 spec:
   selector:
     app: predictive-maintenance
   ports:
-    - port: 5001
-      targetPort: 5001
+    - name: http
+      port: 5001
+      targetPort: http
   type: ClusterIP
