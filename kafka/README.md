@@ -2,8 +2,6 @@
 
 ### **Single‑node deployment on `cloudnode`**
 
-This README reproduces the cluster stabilized on **2025‑05‑12**:
-
 | Component        | Count  |
 | ---------------- | ------ |
 | Strimzi operator | 1 pod  |
@@ -242,18 +240,3 @@ kubectl -n kafka run consumer -ti --image=docker.io/bitnami/kafka:3.6 --restart=
   kafka-console-consumer.sh --bootstrap-server kafka-cluster-kafka-bootstrap:9092 --topic smoke \
   --from-beginning --timeout-ms 10000
 ```
-
----
-
-## Troubleshooting quick‑look
-
-| Symptom                                       | Fix                                                                           |
-| --------------------------------------------- | ----------------------------------------------------------------------------- |
-| `clusterroles … AlreadyExists` during install | Perform **Section 1** to purge old RBAC, then re‑apply.                       |
-| Operator CrashLoop with `403 /leases`         | ClusterRoleBindings still reference *strimzi* namespace ⇒ redo **Section 3**. |
-| ZooKeeper/Brokers on wrong node               | Apply/patch affinity (**4.1**) and delete pods so they reschedule.            |
-| Entity‑operator on edgenode                   | Use **Section 5** Deployment patch.                                           |
-| Broker port 9092 bind error                   | Another process on cloudnode → free port, delete broker pod.                  |
-| Broker “Inconsistent clusterId”               | Stale data dir → delete pod (ephemeral) or wipe its PVC.                      |
-
----

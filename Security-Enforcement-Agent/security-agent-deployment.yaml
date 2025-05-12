@@ -1,3 +1,8 @@
+# Updated daemonsets for edge‑agents namespace
+# Includes fixes: tolerations for edge nodes, explicit restartPolicy
+# and correct Kafka NodePort reference so pods do not crash‑loop
+
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -14,9 +19,18 @@ spec:
     spec:
       hostNetwork: true
       hostPID: true
-      terminationGracePeriodSeconds: 30
+      # ensure pods schedule on edge nodes without CNI plugin
       nodeSelector:
         edge.kubeedge.io/exclude-cni: "true"
+      tolerations:
+        # allow scheduling on KubeEdge nodes that carry the "edge" taint
+        - key: "node-role.kubeedge.io/edge"
+          operator: "Exists"
+          effect: "NoSchedule"
+      restartPolicy: Always
+
+      terminationGracePeriodSeconds: 30
+
       initContainers:
       - name: veth-setup
         image: busybox
@@ -35,6 +49,7 @@ spec:
           mountPath: /dev
         - name: ovsdb-socket
           mountPath: /var/run/openvswitch
+
       containers:
       - name: enforcement-agent
         image: henok28/security-enforcement-agent:v2
@@ -43,7 +58,7 @@ spec:
           privileged: true
         env:
         - name: KAFKA_BROKER
-          value: "192.168.56.121:31896"
+          value: "192.168.56.121:31896"  # NodePort of kafka-cluster-kafka‑external‑bootstrap
         - name: ONOS_URL
           value: "http://192.168.56.121:8181"
         - name: OVS_BRIDGE
@@ -62,23 +77,12 @@ spec:
           limits:
             cpu: 500m
             memory: 256Mi
-        # livenessProbe:
-        #   httpGet:
-        #     path: /api/flows
-        #     port: 5005
-        #   initialDelaySeconds: 30
-        #   periodSeconds: 10
-        # readinessProbe:
-        #   httpGet:
-        #     path: /api/flows
-        #     port: 5005
-        #   initialDelaySeconds: 15
-        #   periodSeconds: 10
         volumeMounts:
         - name: dev-mount
           mountPath: /dev
         - name: ovsdb-socket
           mountPath: /var/run/openvswitch
+
       volumes:
       - name: dev-mount
         hostPath:

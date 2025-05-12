@@ -209,7 +209,7 @@ sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
 
 
 sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
-        --token=5b961671582cfa4cdf2953a3f684856024022a14d1ed44611142dbaa743c123c.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDU4OTk2NTB9.RgVbFcVHrIHCAFXBwPlQobZvmQWa7XrmTLyWnRFsB-M \
+        --token=5b961671582cfa4cdf2953a3f684856024022a14d1ed44611142dbaa743c123c.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDcxNzAzMjF9.MmbL7yexHT4UjLDoShUGV6ZJfIx_TIrKzOB5LwFESbs \
         --kubeedge-version=1.20.0 \
         --kube-config=/etc/kubernetes/admin.conf \
         --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \

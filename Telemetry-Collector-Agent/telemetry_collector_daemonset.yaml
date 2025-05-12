@@ -13,7 +13,7 @@ spec:
         app: telem-collector
     spec:
       hostNetwork: true
-      terminationGracePeriodSeconds: 30
+      # ensure pods schedule on edge nodes without CNI plugin
       nodeSelector:
         edge.kubeedge.io/exclude-cni: "true"
       tolerations:
@@ -21,6 +21,8 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
       restartPolicy: Always
+
+      terminationGracePeriodSeconds: 30
 
       initContainers:
       - name: veth-setup
@@ -47,7 +49,6 @@ spec:
         imagePullPolicy: Always
         securityContext:
           privileged: true
-
         env:
         - name: MQTT_BROKER_HOST
           value: "127.0.0.1"
@@ -56,14 +57,13 @@ spec:
         - name: MQTT_TOPIC
           value: "devices/#"
         - name: KAFKA_BOOTSTRAP
-          value: "192.168.56.121:31896"
+          value: "192.168.56.121:31896"  # NodePort of kafka-cluster-kafka‑external‑bootstrap
         - name: KAFKA_SECURITY_PROTOCOL
           value: "PLAINTEXT"
         - name: TOPIC_RAW
           value: "telemetry-raw"
         - name: TOPIC_ALERTS
           value: "telemetry-alerts"
-
         resources:
           requests:
             cpu: 100m
@@ -71,7 +71,6 @@ spec:
           limits:
             cpu: 500m
             memory: 256Mi
-
         volumeMounts:
         - name: dev-mount
           mountPath: /dev
