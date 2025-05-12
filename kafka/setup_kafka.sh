@@ -133,6 +133,31 @@ kubectl patch kafka kafka-cluster -n kafka --type='merge' -p '{
 kubectl delete pod -n kafka -l strimzi.io/name=kafka-cluster-entity-operator
 kubectl get pod -n kafka -l strimzi.io/name=kafka-cluster-entity-operator -o wide
 
+########################################################################
+###########################################################################
+# If the entity operator still being scheduled on the edge node
+kubectl label node cloudnode kafka-zone=primary --overwrite
+
+kubectl -n kafka patch deployment kafka-cluster-entity-operator \
+  --type=merge \
+  -p '{
+        "spec": {
+          "template": {
+            "spec": {
+              "nodeSelector": {
+                "kafka-zone": "primary"
+              }
+            }
+          }
+        }
+      }'
+
+kubectl -n kafka delete pod -l strimzi.io/name=kafka-cluster-entity-operator
+kubectl -n kafka get pods -w -o wide -l strimzi.io/name=kafka-cluster-entity-operator
+#################################################################
+####################################################################
+
+
 #############################################################
 # Verify the kafka setup
 
@@ -187,6 +212,173 @@ kubectl get secret edge-collector -n kafka -o jsonpath='{.data.ca\.crt}' | base6
 
 kubectl get kafka kafka-cluster -n kafka -o yaml
 
+
+
+##############################################################
+Updated setup
+#################################################################
+
+# Tear down any existing Kafka install
+kubectl delete kafka kafka-cluster -n kafka --ignore-not-found
+kubectl delete namespace kafka --ignore-not-found
+
+# Recreate the kafka namespace
+kubectl create namespace kafka
+
+# Install the all-in-one 0.45.0 operator YAML
+kubectl apply -f \
+  https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.45.0/strimzi-cluster-operator-0.45.0.yaml \
+  -n kafka
+
+kubectl -n kafka patch deployment strimzi-cluster-operator \
+  --type='json' \
+  -p='[{"op":"add","path":"/spec/template/spec/nodeSelector","value":{"kubernetes.io/hostname":"cloudnode"}}]'
+
+kubectl apply -f kafka-cluster.yaml -n kafka
+
+kubectl patch kafka kafka-cluster -n kafka --type=merge -p '
+spec:
+  kafka:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values: ["cloudnode"]
+  zookeeper:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values: ["cloudnode"]
+'
+kubectl patch kafka kafka-cluster -n kafka --type=merge -p '
+spec:
+  entityOperator:
+    template:
+      pod:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values: ["cloudnode"]
+'
+
+kubectl delete pod -l strimzi.io/name=kafka-cluster-kafka -n kafka
+kubectl delete pod -l strimzi.io/name=kafka-cluster-zookeeper -n kafka
+kubectl delete pod -l strimzi.io/name=kafka-cluster-entity-operator -n kafka
+
+kubectl get pods -n kafka -o wide --watch
+
+
+kubectl get pods -n kafka -w
+
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: strimzi-leader-election-role
+rules:
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get","list","watch","create","update","patch","delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: strimzi-leader-election-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: strimzi-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: strimzi-cluster-operator
+    namespace: kafka
+EOF
+
+kubectl get pods -n kafka -w
+
+
+
+
+
+# kafka-cluster-dual-listener.yaml
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka-cluster
+  namespace: kafka              # ← keep the same namespace
+spec:
+  kafka:
+    version: 3.8.0
+    replicas: 3
+
+    listeners:
+      # ── 1) Internal overlay listener ─────────────────────────────
+      - name: plain             # DNS: kafka-cluster-kafka-bootstrap.kafka:9092
+        port: 9092
+        type: internal
+        tls: false
+
+      # ── 2) Existing NodePort listener for edge-node agents ───────
+      - name: external          # Reachable at <cloud-node-IP>:9094
+        port: 9094
+        type: nodeport
+        tls: false
+
+    storage:
+      type: ephemeral           # keep as-is
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+
+#####################################################################################
+################################################################################
+    # 1 A  Delete the whole namespace – removes pods, PVCs, config-maps, secrets, CRs
+kubectl delete namespace kafka --wait --ignore-not-found
+
+# 1 B  Remove all Strimzi cluster-scoped RBAC
+kubectl delete clusterrole,clusterrolebinding \
+  -l app.kubernetes.io/part-of=strimzi --ignore-not-found
+
+# 1 C  (Optional) remove Strimzi CRDs if you want them gone too
+# kubectl delete crd -l app.kubernetes.io/part-of=strimzi
+
+
+kubectl create namespace kafka
+
+curl -sL https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.45.0/strimzi-cluster-operator-0.45.0.yaml |
+  sed 's/namespace: .*/namespace: kafka/' |
+  kubectl apply -n kafka -f -
+
+kubectl -n kafka patch deployment strimzi-cluster-operator \
+  --type=merge \
+  -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"cloudnode"}}}}}'
+
+
+kubectl -n kafka rollout restart deployment strimzi-cluster-operator
+kubectl -n kafka rollout status  deployment strimzi-cluster-operator
+        # Output
+        deployment "strimzi-cluster-operator" successfully rolled out
+
+kubectl -n kafka get pods -o wide -l strimzi.io/kind=cluster-operator
 
 
 
