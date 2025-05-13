@@ -1,7 +1,29 @@
+# =====================================
+# Namespace (if not already present)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: microservices
+---
+# Dashboard Config (externalised values)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-config
+  namespace: microservices
+  labels:
+    app: asset-monitoring-dashboard
+data:
+  KAFKA_BOOTSTRAP: "kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+  ALERT_TOPIC: "telemetry-alerts"
+  SEC_AGENT_URL: "http://security-enforcement-agent.edge-agents.svc.cluster.local:5005/api/flows"
+---
+# Asset‑Monitoring Dashboard Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: asset-monitoring-dashboard
+  namespace: microservices
 spec:
   replicas: 1
   selector:
@@ -12,25 +34,98 @@ spec:
       labels:
         app: asset-monitoring-dashboard
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: cloudnode   # keep it in cloud with Flannel CNI
       containers:
       - name: dashboard
-        image: your-dockerhub-username/asset-monitoring-dashboard:latest
+        image: asset-monitoring-dashboard:v1.0
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: dashboard-config
         ports:
         - containerPort: 5003
+          name: http
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+# Service – expose inside cluster & on host
+apiVersion: v1
+kind: Service
+metadata:
+  name: asset-monitoring-dashboard
+  namespace: microservices
+spec:
+  type: NodePort
+  selector:
+    app: asset-monitoring-dashboard
+  ports:
+  - name: http
+    port: 80
+    targetPort: 5003
+    nodePort: 32003   # => http://<cloudnode‑IP>:32003/
+---
+# =====================================
+# Grafana (lightweight, in‑memory)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: cloudnode
+      containers:
+      - name: grafana
+        image: grafana/grafana-oss:10.4.2
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: "grafana"
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+      volumes:
+      - name: grafana-storage
+        emptyDir: {}   # switch to PVC for persistence
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: asset-monitoring-dashboard-service
+  name: grafana
+  namespace: microservices
 spec:
+  type: NodePort
   selector:
-    app: asset-monitoring-dashboard
+    app: grafana
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 5003
-  type: NodePort  # You can change this to LoadBalancer if using cloud
-
-# kubectl apply -f asset_monitoring_dashboard_deployment.yaml # Apply the Deployment
-# kubectl get svc asset-monitoring-dashboard-service # To access the dashboard
-# open the NodePort in your browser at http://<NODE-IP>:<NODE-PORT>
+  - port: 80
+    targetPort: 3000
+    nodePort: 32030  # => http://<cloudnode‑IP>:32030/

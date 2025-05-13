@@ -1,45 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Asset Monitoring Dashboard</title>
-    <script>
-        async function fetchAlerts() {
-            const response = await fetch('/api/alerts');
-            const data = await response.json();
-            const alertBox = document.getElementById("alerts");
-            alertBox.innerHTML = '';
-            data.forEach(alert => {
-                const item = document.createElement("li");
-                item.textContent = JSON.stringify(alert);
-                alertBox.appendChild(item);
-            });
-        }
-
-        async function fetchFlows() {
-            const response = await fetch('http://<SECURITY_AGENT_IP>:5005/api/flows');  // Replace with correct Service IP or hostname
-            const data = await response.json();
-            const flowBox = document.getElementById("flows");
-            flowBox.innerHTML = '';
-            data.forEach(flow => {
-                const item = document.createElement("li");
-                item.textContent = JSON.stringify(flow);
-                flowBox.appendChild(item);
-            });
-        }
-
-        setInterval(fetchAlerts, 3000);  // Poll alerts every 3 sec
-        setInterval(fetchFlows, 5000);   // Poll flows every 5 sec
-        window.onload = () => {
-            fetchAlerts();
-            fetchFlows();
-        }
-    </script>
+  <meta charset="UTF-8" />
+  <title>Asset Monitoring Dashboard</title>
+  <style>body{font-family:Arial;}li{margin:4px 0;}#flows,#alerts{max-height:300px;overflow:auto;border:1px solid #ccc;padding:8px;}</style>
 </head>
 <body>
-    <h2>Real-Time Asset Monitoring Alerts</h2>
-    <ul id="alerts"></ul>
+  <h2>Real‑Time Anomaly Alerts</h2>
+  <ul id="alerts"></ul>
 
-    <h2>Live Flow Logs (Blocked Devices / OVS Rules)</h2>
-    <ul id="flows"></ul>
+  <h2>Current SDN Flow Rules</h2>
+  <ul id="flows"></ul>
+
+<script>
+const SEC_AGENT_URL = "{{ sec_agent_url }}";
+async function fetchJSON(url){const r=await fetch(url);return r.ok?r.json():[];}
+async function refresh(){
+  const [alerts,flows] = await Promise.all([
+    fetchJSON('/api/alerts'),
+    fetchJSON(SEC_AGENT_URL)
+  ]);
+  const alertBox=document.getElementById('alerts');alertBox.innerHTML='';
+  alerts.forEach(a=>{const li=document.createElement('li');li.textContent=JSON.stringify(a);alertBox.appendChild(li);});
+  const flowBox=document.getElementById('flows');flowBox.innerHTML='';
+  flows.forEach(f=>{const li=document.createElement('li');li.textContent=JSON.stringify(f);flowBox.appendChild(li);});
+}
+setInterval(refresh,3000);refresh();
+</script>
 </body>
 </html>

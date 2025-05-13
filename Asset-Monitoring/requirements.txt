@@ -1,2 +1,4 @@
-flask
-kafka-python
+Flask==3.0.2
+kafka‑python==2.0.2
+gunicorn==21.2.0
+prometheus‑client==0.20.0

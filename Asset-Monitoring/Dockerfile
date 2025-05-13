@@ -1,10 +1,8 @@
-FROM python:3.9-slim
+FROM python:3.12-slim
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
+COPY app.py ./
+COPY templates ./templates
 EXPOSE 5003
-CMD ["python", "app.py"]
-
-# docker build -t your-dockerhub-username/asset-monitoring-dashboard:latest .
-# docker push your-dockerhub-username/asset-monitoring-dashboard:latest
+CMD ["gunicorn","--workers","2","--threads","4","--bind","0.0.0.0:5003","app:app"]
