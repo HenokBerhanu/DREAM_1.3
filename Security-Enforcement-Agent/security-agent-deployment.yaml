@@ -1,8 +1,3 @@
-# Updated daemonsets for edge‑agents namespace
-# Includes fixes: tolerations for edge nodes, explicit restartPolicy
-# and correct Kafka NodePort reference so pods do not crash‑loop
-
----
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -16,77 +11,68 @@ spec:
     metadata:
       labels:
         app: security-agent
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port:   "9000"
+        prometheus.io/path:   "/metrics"
     spec:
       hostNetwork: true
       hostPID: true
-      # ensure pods schedule on edge nodes without CNI plugin
       nodeSelector:
         edge.kubeedge.io/exclude-cni: "true"
       tolerations:
-        # allow scheduling on KubeEdge nodes that carry the "edge" taint
-        - key: "node-role.kubeedge.io/edge"
-          operator: "Exists"
-          effect: "NoSchedule"
-      restartPolicy: Always
-
-      terminationGracePeriodSeconds: 30
-
+        - key: node-role.kubeedge.io/edge
+          operator: Exists
+          effect: NoSchedule
       initContainers:
-      - name: veth-setup
-        image: busybox
-        command:
-          - /bin/sh
-          - -c
-          - |
-            ip link add veth-br-sec type veth peer name veth-sec || true
-            ip link set veth-br-sec up
-            ip link set veth-sec up
-            ovs-vsctl add-port br0 veth-br-sec || true
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: dev-mount
-          mountPath: /dev
-        - name: ovsdb-socket
-          mountPath: /var/run/openvswitch
+        - name: veth-setup
+          image: busybox
+          command:
+            - /bin/sh
+            - -c
+            - |
+              ip link add veth-br-sec type veth peer name veth-sec || true
+              ip link set veth-br-sec up
+              ip link set veth-sec up
+              ovs-vsctl add-port br0 veth-br-sec || true
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: dev-mount
+              mountPath: /dev
+            - name: ovsdb-socket
+              mountPath: /var/run/openvswitch
 
       containers:
-      - name: enforcement-agent
-        image: henok28/security-enforcement-agent:v2
-        imagePullPolicy: Always
-        securityContext:
-          privileged: true
-        env:
-        - name: KAFKA_BROKER
-          value: "192.168.56.121:31896"  # NodePort of kafka-cluster-kafka‑external‑bootstrap
-        - name: ONOS_URL
-          value: "http://192.168.56.121:8181"
-        - name: OVS_BRIDGE
-          value: "br0"
-        - name: ENFORCE_MODE
-          value: "onos"
-        ports:
-        - name: prom-metrics
-          containerPort: 9000
-        - name: flow-api
-          containerPort: 5005
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 500m
-            memory: 256Mi
-        volumeMounts:
-        - name: dev-mount
-          mountPath: /dev
-        - name: ovsdb-socket
-          mountPath: /var/run/openvswitch
+        - name: enforcement-agent
+          image: henok28/security-enforcement-agent:v2
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          env:
+            - name: KAFKA_BROKER
+              value: "kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+            - name: ONOS_URL
+              value: "http://onos-controller.micro-onos.svc.cluster.local:8181/onos/v1"
+            - name: OVS_BRIDGE
+              value: "br0"
+            - name: ENFORCE_MODE
+              value: "onos"
+          ports:
+            - name: metrics
+              containerPort: 9000
+            - name: flow-api
+              containerPort: 5005
+          volumeMounts:
+            - name: dev-mount
+              mountPath: /dev
+            - name: ovsdb-socket
+              mountPath: /var/run/openvswitch
 
       volumes:
-      - name: dev-mount
-        hostPath:
-          path: /dev
-      - name: ovsdb-socket
-        hostPath:
-          path: /var/run/openvswitch
+        - name: dev-mount
+          hostPath:
+            path: /dev
+        - name: ovsdb-socket
+          hostPath:
+            path: /var/run/openvswitch

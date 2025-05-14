@@ -114,6 +114,10 @@ kubectl -n edge-agents patch ds telemetry-collector \
 kubectl -n edge-agents delete pod -l app=security-agent
 kubectl -n edge-agents delete pod -l app=telem-collector
 
+kubectl -n edge-agents rollout status ds/security-enforcement-agent
+kubectl -n edge-agents logs -l app=security-agent -f | grep -i kafka
+
+
 kubectl -n edge-agents get pods -w -o wide
 #############################################################
 ############################################################

@@ -38,7 +38,7 @@ spec:
         kubernetes.io/hostname: cloudnode   # keep it in cloud with Flannel CNI
       containers:
       - name: dashboard
-        image: asset-monitoring-dashboard:v1.0
+        image: henok28/asset-monitoring-dashboard:v1.3
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
@@ -53,6 +53,12 @@ spec:
           limits:
             cpu: 250m
             memory: 128Mi
+        startupProbe:
+          httpGet:
+            path: /metrics
+            port: http  
+          failureThreshold: 18
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /metrics
@@ -109,6 +115,12 @@ spec:
         env:
         - name: GF_SECURITY_ADMIN_PASSWORD
           value: "grafana"
+        - name: KAFKA_BOOTSTRAP
+          value: "kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+        - name: ALERT_TOPIC
+          value: "telemetry-alerts"
+        - name: SEC_AGENT_URL
+          value: "http://security-enforcement-agent.edge-agents.svc.cluster.local:5005/api/flows"
         volumeMounts:
         - name: grafana-storage
           mountPath: /var/lib/grafana
