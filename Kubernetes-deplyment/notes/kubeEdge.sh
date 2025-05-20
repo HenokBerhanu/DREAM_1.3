@@ -5,17 +5,27 @@
 ############################################################################################################################
 # On the Edge node:  Install keadm (KubeEdge Installer) on the Edge Node
 # version vv1.17.0
-wget https://github.com/kubeedge/kubeedge/releases/download/v1.17.0/keadm-v1.17.0-linux-amd64.tar.gz
-tar -zxvf keadm-v1.17.0-linux-amd64.tar.gz
-sudo cp keadm-v1.17.0-linux-amd64/keadm/keadm /usr/local/bin/keadm
+        # wget https://github.com/kubeedge/kubeedge/releases/download/v1.17.0/keadm-v1.17.0-linux-amd64.tar.gz
+        # tar -zxvf keadm-v1.17.0-linux-amd64.tar.gz
+        # sudo cp keadm-v1.17.0-linux-amd64/keadm/keadm /usr/local/bin/keadm
 ###################################################################################################
 
 ##########################################################################################################################
 #Latest version as of January 2025
-wget https://github.com/kubeedge/kubeedge/releases/download/v1.20.0/keadm-v1.20.0-linux-amd64.tar.gz
+        # wget https://github.com/kubeedge/kubeedge/releases/download/v1.20.0/keadm-v1.20.0-linux-amd64.tar.gz
+        # tar -zxvf keadm-v1.20.0-linux-amd64.tar.gz
+        # sudo cp keadm-v1.20.0-linux-amd64/keadm/keadm /usr/local/bin/keadm
+        # sudo chmod +x /usr/local/bin/keadm
+
+#####################################################################
+# best practive
+curl -LO https://github.com/kubeedge/kubeedge/releases/download/v1.20.0/keadm-v1.20.0-linux-amd64.tar.gz
 tar -zxvf keadm-v1.20.0-linux-amd64.tar.gz
-sudo cp keadm-v1.20.0-linux-amd64/keadm/keadm /usr/local/bin/keadm
+sudo mv keadm-v1.20.0-linux-amd64/keadm/keadm /usr/local/bin/keadm
 sudo chmod +x /usr/local/bin/keadm
+
+sudo rm -rf keadm-v1.20.0-linux-amd64 keadm-v1.20.0-linux-amd64.tar.gz
+##############################################################
 
 #############################################################################################################################
 
@@ -33,10 +43,10 @@ keadm version
 # Install keadm on the master node
 ##########################################################################################################################
 #Latest version as of January 2025
-wget https://github.com/kubeedge/kubeedge/releases/download/v1.20.0/keadm-v1.20.0-linux-amd64.tar.gz
-tar -zxvf keadm-v1.20.0-linux-amd64.tar.gz
-sudo cp keadm-v1.20.0-linux-amd64/keadm/keadm /usr/local/bin/keadm
-sudo chmod +x /usr/local/bin/keadm
+        # wget https://github.com/kubeedge/kubeedge/releases/download/v1.20.0/keadm-v1.20.0-linux-amd64.tar.gz
+        # tar -zxvf keadm-v1.20.0-linux-amd64.tar.gz
+        # sudo cp keadm-v1.20.0-linux-amd64/keadm/keadm /usr/local/bin/keadm
+        # sudo chmod +x /usr/local/bin/keadm
 #############################################################################################################################
 
 ########################################################################################################################
@@ -46,10 +56,14 @@ sudo chmod +x /usr/local/bin/keadm
 
 #keadm init --advertise-address="THE-EXPOSED-IP" --kubeedge-version=v1.17.0 --kube-config=/root/.kube/config
 # Not the latest version
-sudo keadm init --advertise-address=192.168.56.102 --kubeedge-version=v1.17.0 --kube-config=/etc/kubernetes/admin.conf
+          # sudo keadm init --advertise-address=192.168.56.102 --kubeedge-version=v1.17.0 --kube-config=/etc/kubernetes/admin.conf
 #keadm init --advertise-address=192.168.56.102 --kube-config=/etc/kubernetes/admin.conf
 
-sudo keadm init --advertise-address=192.168.56.102 --kubeedge-version=1.20.0 --kube-config=/etc/kubernetes/admin.conf
+          # sudo keadm init --advertise-address=192.168.56.102 --kubeedge-version=1.20.0 --kube-config=/etc/kubernetes/admin.conf
+
+sudo keadm init \
+  --advertise-address=192.168.56.102 \
+  --kube-config=/etc/kubernetes/admin.conf
 
 # For multiple edge nodes. EdgeMesh is useful when you have multiple Edge Nodes because it enables direct edge-to-edge communication without needing to route traffic through the cloud (Master node)
 # keadm init --set server.advertiseAddress="THE-EXPOSED-IP" --set server.nodeName=allinone  --kube-config=/root/.kube/config --force --external-helm-root=/root/go/src/github.com/edgemesh/build/helm --profile=edgemesh
@@ -66,6 +80,21 @@ sudo keadm init --advertise-address=192.168.56.102 --kubeedge-version=1.20.0 --k
         # NAMESPACE: kubeedge
         # STATUS: deployed
         # REVISION: 1
+
+# Check you should see this
+kubectl -n kubeedge get pods,svc,cm
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/cloud-iptables-manager-jqdd5   1/1     Running   0          3m42s
+pod/cloudcore-58b79bbcdf-zzlc4     1/1     Running   0          3m42s
+
+NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                             AGE
+service/cloudcore   ClusterIP   10.103.189.106   <none>        10000/TCP,10001/UDP,10002/TCP,10003/TCP,10004/TCP   3m42s
+
+NAME                         DATA   AGE
+configmap/cloudcore          1      3m42s
+configmap/kube-root-ca.crt   1      3m42s
+configmap/tunnelport         0      3m41s
+
 ##########################################################################
 # keadm manifest generate
 # keadm manifest generate --advertise-address="THE-EXPOSED-IP" --kube-config=/root/.kube/config > kubeedge-cloudcore.yaml
@@ -89,6 +118,13 @@ tar -zxvf kubeedge-v1.20.0-linux-amd64.tar.gz
 
 sudo cp kubeedge-v1.20.0-linux-amd64/cloud/cloudcore/cloudcore /usr/local/bin/cloudcore
 sudo chmod +x /usr/local/bin/cloudcore
+
+##########################
+tar zxvf kubeedge-v1.20.0-linux-amd64.tar.gz
+cd kubeedge-v1.20.0-linux-amd64
+sudo cp ~/kubeedge-v1.20.0-linux-amd64/cloud/cloudcore/cloudcore /usr/local/bin/
+sudo chmod +x /usr/local/bin/cloudcore
+#############################
 
 #################################################################################################################
 
@@ -167,6 +203,9 @@ sudo systemctl enable cloudcore
 sudo systemctl restart cloudcore
 sudo systemctl status cloudcore
 
+sudo systemctl daemon-reload
+sudo systemctl restart cloudcore
+sudo systemctl status cloudcore
 
 # sudo /usr/local/bin/cloudcore --config=/etc/kubeedge/config/cloudcore.yaml
 # # manually generate a default config:
@@ -199,6 +238,16 @@ sudo keadm gettoken --kube-config /etc/kubernetes/admin.conf
 # sudo keadm join --cloudcore-ipport=192.168.56.102:10000 --token=d9283db963e8b5211dd0fdd280a0e1de8cea5617bc6a944648c830ba218bd1a1.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDI0MjU3ODh9.fcI-tp9zW3-QDWMMJ1TFc2k6V69eNIPhuVQRvDhLmu0 --kubeedge-version=v1.17.0
 # sudo keadm join --cloudcore-ipport=192.168.56.102:10000 --token=d9283db963e8b5211dd0fdd280a0e1de8cea5617bc6a944648c830ba218bd1a1.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDI0MjU3ODh9.fcI-tp9zW3-QDWMMJ1TFc2k6V69eNIPhuVQRvDhLmu0 --kubeedge-version=v1.17.0 --kube-config=/etc/kubernetes/admin.conf --cgroupdriver=systemd
 
+vagrant ssh-config MasterNode
+
+# coppy from the host to the edge node
+sudo scp -i /home/henok/DREAM_1.3/Kubernetes-deplyment/.vagrant/machines/MasterNode/virtualbox/private_key \
+-P 2222 \
+~/DREAM_1.3/Kubernetes-deplyment/notes/cloudcore-svc-nodeport.yaml \
+vagrant@127.0.0.1:/home/vagrant/
+
+kubectl -n kubeedge apply -f cloudcore-svc-nodeport.yaml
+
 ########################################################################################################################
 # Updated one. Use one them
 sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
@@ -209,11 +258,19 @@ sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
 
 
 sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
-        --token=5b961671582cfa4cdf2953a3f684856024022a14d1ed44611142dbaa743c123c.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDcxNzAzMjF9.MmbL7yexHT4UjLDoShUGV6ZJfIx_TIrKzOB5LwFESbs \
+        --token=51656d166ae09290d62bfd7f4cbe94f5ba2bd375ddcc32ebe18893ae54e2d968.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc1MTMyNDJ9.OKnsrKI7LIrlEHBseqcQOKsyE-sdmQFltN_E_gOaLbw \
         --kubeedge-version=1.20.0 \
         --kube-config=/etc/kubernetes/admin.conf \
         --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
         --cgroupdriver=systemd
+
+sudo keadm join \
+  --cloudcore-ipport=192.168.56.121:30002 \
+  --token=51656d166ae09290d62bfd7f4cbe94f5ba2bd375ddcc32ebe18893ae54e2d968.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc1MTMyNDJ9.OKnsrKI7LIrlEHBseqcQOKsyE-sdmQFltN_E_gOaLbw \
+  --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
+  --kubeedge-version=1.20.0 \
+  --cgroupdriver=systemd
+
 ##################################################################################################################
 
 ##############################################################################################
@@ -379,3 +436,97 @@ echo NWI5NjE2NzE1ODJjZmE0Y2RmMjk1M2EzZjY4NDg1NjAyNDAyMmExNGQxZWQ0NDYxMTE0MmRiYWE
 
 
 sudo keadm reset edge
+
+# copy ca and certs folder from the edge node to the host to coppy it to the master directory
+vagrant ssh-config EdgeNode
+
+# then
+mkdir -p ~/edge-kubeedge-backup
+ssh -i /home/henok/DREAM_1.3/Kubernetes-deplyment/.vagrant/machines/EdgeNode/virtualbox/private_key \
+    -p 2201 vagrant@127.0.0.1 \
+  "sudo tar czf - -C /etc/kubeedge ca certs" \
+| tar xzf - -C ~/edge-kubeedge-backup
+
+# then coppy it to the master node cloud core tls directory
+vagrant ssh-config MasterNode
+
+# coppy from the host to the edge node
+sudo scp -i /home/henok/DREAM_1.3/Kubernetes-deplyment/.vagrant/machines/MasterNode/virtualbox/private_key \
+-P 2222 \
+~/edge-kubeedge-backup/ca/rootCA.crt \
+~/edge-kubeedge-backup/certs/server.crt \
+~/edge-kubeedge-backup/certs/server.key \
+vagrant@127.0.0.1:/home/vagrant/
+
+# then on the master node, move those files to the required directory
+#sudo mkdir -p /etc/kubeedge/ca/
+#sudo mkdir -p /etc/kubeedge/certs/
+sudo mv rootCA.crt /etc/kubeedge/ca/
+sudo mv server.crt /etc/kubeedge/certs/
+sudo mv server.key /etc/kubeedge/certs/
+
+
+
+#########################################
+#####################################################
+##################################################################
+########################################################################
+# if you ever ran keadm before:
+sudo keadm reset cloud    || true
+sudo keadm reset edge     || true
+
+# stop/remove any hand-rolled cloudcore/edgecore services
+sudo systemctl stop cloudcore   2>/dev/null || true
+sudo systemctl disable cloudcore 2>/dev/null|| true
+sudo rm /etc/systemd/system/cloudcore.service 2>/dev/null
+
+sudo systemctl stop edgecore    2>/dev/null || true
+sudo systemctl disable edgecore  2>/dev/null|| true
+sudo rm /etc/systemd/system/edgecore.service  2>/dev/null
+
+# delete any leftover KubeEdge directory
+sudo rm -rf /etc/kubeedge
+
+# Install keadm On both cloud and edge:
+curl -LO https://github.com/kubeedge/kubeedge/releases/download/v1.20.0/keadm-v1.20.0-linux-amd64.tar.gz
+tar -zxvf keadm-v1.20.0-linux-amd64.tar.gz
+sudo mv keadm-v1.20.0-linux-amd64/keadm/keadm /usr/local/bin/keadm
+sudo chmod +x /usr/local/bin/keadm
+
+# Check version
+keadm version
+
+sudo keadm init --advertise-address=192.168.56.121 --kubeedge-version=1.20.0 --kube-config=/etc/kubernetes/admin.conf
+
+kubectl -n kubeedge get pods,svc,cm
+
+kubectl -n kubeedge apply -f cloudcore-svc-nodeport.yaml
+
+sudo keadm gettoken --kube-config /etc/kubernetes/admin.conf
+
+sudo keadm join \
+  --cloudcore-ipport=192.168.56.121:30002 \
+  --token=65d641eb23b1738f12d09cfe1055301ee24cceb0eef7e8af84a0593b9ae5b77d.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc3NjA5ODZ9.EAh1JkEYIZrTwKSogaRvsUq9QSr42whpFEkTqSy0tzs \
+  --kubeedge-version=1.20.0 \
+  --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
+  --cgroupdriver=systemd
+
+sudo systemctl daemon-reexec
+sudo systemctl restart edgecore
+sudo journalctl -u edgecore -f
+
+
+sudo ls -l /etc/kubeedge/ca/rootCA.crt
+sudo ls -l /etc/kubeedge/certs/server.crt
+sudo ls -l /etc/kubeedge/certs/server.key
+
+
+# install cloud core manually if it is not installed with init
+wget https://github.com/kubeedge/kubeedge/releases/download/v1.20.0/kubeedge-v1.20.0-linux-amd64.tar.gz
+tar -zxvf kubeedge-v1.20.0-linux-amd64.tar.gz
+sudo cp kubeedge-v1.20.0-linux-amd64/cloud/cloudcore/cloudcore /usr/local/bin/cloudcore
+sudo chmod +x /usr/local/bin/cloudcore
+
+wget https://github.com/kubeedge/kubeedge/releases/download/v1.20.0/kubeedge-v1.20.0-linux-amd64.tar.gz
+tar -xvzf kubeedge-v1.20.0-linux-amd64.tar.gz
+sudo cp kubeedge-v1.20.0-linux-amd64/cloud/cloudcore /usr/local/bin/

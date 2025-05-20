@@ -17,6 +17,7 @@ spec:
         prometheus.io/path:   "/metrics"
     spec:
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       hostPID: true
       nodeSelector:
         edge.kubeedge.io/exclude-cni: "true"
@@ -42,7 +43,6 @@ spec:
               mountPath: /dev
             - name: ovsdb-socket
               mountPath: /var/run/openvswitch
-
       containers:
         - name: enforcement-agent
           image: henok28/security-enforcement-agent:v2
@@ -50,8 +50,9 @@ spec:
           securityContext:
             privileged: true
           env:
+            # Use NodePort on cloudnode for cross-node access
             - name: KAFKA_BROKER
-              value: "kafka-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+              value: "192.168.56.121:31290"
             - name: ONOS_URL
               value: "http://onos-controller.micro-onos.svc.cluster.local:8181/onos/v1"
             - name: OVS_BRIDGE
@@ -68,7 +69,90 @@ spec:
               mountPath: /dev
             - name: ovsdb-socket
               mountPath: /var/run/openvswitch
+      volumes:
+        - name: dev-mount
+          hostPath:
+            path: /dev
+        - name: ovsdb-socket
+          hostPath:
+            path: /var/run/openvswitch
 
+
+
+#############################################
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: security-enforcement-agent
+  namespace: edge-agents
+spec:
+  selector:
+    matchLabels:
+      app: security-agent
+  template:
+    metadata:
+      labels:
+        app: security-agent
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port:   "9000"
+        prometheus.io/path:   "/metrics"
+    spec:
+      # keep hostNetwork for OVS access...
+      hostNetwork: true
+      # ...but still use the cluster DNS
+      dnsPolicy: ClusterFirstWithHostNet
+      hostPID: true
+      nodeSelector:
+        edge.kubeedge.io/exclude-cni: "true"
+      tolerations:
+        - key: node-role.kubeedge.io/edge
+          operator: Exists
+          effect: NoSchedule
+      initContainers:
+        - name: veth-setup
+          image: busybox
+          command:
+            - /bin/sh
+            - -c
+            - |
+              ip link add veth-br-sec type veth peer name veth-sec || true
+              ip link set veth-br-sec up
+              ip link set veth-sec up
+              ovs-vsctl add-port br0 veth-br-sec || true
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: dev-mount
+              mountPath: /dev
+            - name: ovsdb-socket
+              mountPath: /var/run/openvswitch
+      containers:
+        - name: enforcement-agent
+          image: henok28/security-enforcement-agent:v2
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          env:
+            - name: KAFKA_BROKER
+              value: "kafka-cluster-kafka-external-bootstrap.kafka.svc.cluster.local:9094"
+            - name: ONOS_URL
+              # base URL only—your code calls {ONOS_URL}/onos/v1/flows/…
+              value: "http://onos-controller.micro-onos.svc.cluster.local:8181"
+            - name: OVS_BRIDGE
+              value: "br0"
+            - name: ENFORCE_MODE
+              value: "onos"
+          ports:
+            - containerPort: 9000
+              name: metrics
+            - containerPort: 5005
+              name: flow-api
+          volumeMounts:
+            - name: dev-mount
+              mountPath: /dev
+            - name: ovsdb-socket
+              mountPath: /var/run/openvswitch
       volumes:
         - name: dev-mount
           hostPath:
