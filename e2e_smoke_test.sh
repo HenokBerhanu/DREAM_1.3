@@ -31,7 +31,7 @@ setup:
   grafana points at prometheus as a data source.
 
   #####################################
-  Test
+  Test Test
   ######################################
 
   A. Telemetry ingestion test (MQTT → Kafka)
