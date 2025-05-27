@@ -265,8 +265,8 @@ sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
         --cgroupdriver=systemd
 
 sudo keadm join \
-  --cloudcore-ipport=192.168.56.121:30002 \
-  --token=51656d166ae09290d62bfd7f4cbe94f5ba2bd375ddcc32ebe18893ae54e2d968.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc1MTMyNDJ9.OKnsrKI7LIrlEHBseqcQOKsyE-sdmQFltN_E_gOaLbw \
+  --cloudcore-ipport=192.168.56.102:10000 \
+  --token=49ff19c39b513f98aa798f007234a62ae96c2a57111038bea036353a3541cb13.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc4MDI0MTh9.JiNfMUqfAz8lr76jC_fAdprFPIytDfBgWn8eVcBDG4w \
   --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
   --kubeedge-version=1.20.0 \
   --cgroupdriver=systemd
@@ -496,7 +496,7 @@ sudo chmod +x /usr/local/bin/keadm
 # Check version
 keadm version
 
-sudo keadm init --advertise-address=192.168.56.121 --kubeedge-version=1.20.0 --kube-config=/etc/kubernetes/admin.conf
+sudo keadm init --advertise-address=192.168.56.102 --kubeedge-version=1.20.0 --kube-config=/etc/kubernetes/admin.conf
 
 kubectl -n kubeedge get pods,svc,cm
 
