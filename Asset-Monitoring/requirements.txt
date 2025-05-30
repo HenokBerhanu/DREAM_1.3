@@ -1,5 +1,0 @@
-Flask==3.0.2
-gunicorn==21.2.0
-kafka-python==2.0.2
-prometheus-client==0.20.0
-six==1.16.0
