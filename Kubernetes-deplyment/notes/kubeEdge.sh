@@ -24,7 +24,7 @@ tar -zxvf keadm-v1.20.0-linux-amd64.tar.gz
 sudo mv keadm-v1.20.0-linux-amd64/keadm/keadm /usr/local/bin/keadm
 sudo chmod +x /usr/local/bin/keadm
 
-sudo rm -rf keadm-v1.20.0-linux-amd64 keadm-v1.20.0-linux-amd64.tar.gz
+      # sudo rm -rf keadm-v1.20.0-linux-amd64 keadm-v1.20.0-linux-amd64.tar.gz
 ##############################################################
 
 #############################################################################################################################
@@ -62,7 +62,7 @@ keadm version
           # sudo keadm init --advertise-address=192.168.56.102 --kubeedge-version=1.20.0 --kube-config=/etc/kubernetes/admin.conf
 
 sudo keadm init \
-  --advertise-address=192.168.56.102 \
+  --advertise-address=192.168.56.121 \
   --kube-config=/etc/kubernetes/admin.conf
 
 # For multiple edge nodes. EdgeMesh is useful when you have multiple Edge Nodes because it enables direct edge-to-edge communication without needing to route traffic through the cloud (Master node)
@@ -223,9 +223,9 @@ kubectl get all -n kubeedge
 
 ############################################################################################################################
 # Get the Edge Node Token
-keadm gettoken
+      #keadm gettoken
 # or
-sudo keadm gettoken --kube-config /etc/kubernetes/admin.conf
+      #sudo keadm gettoken --kube-config /etc/kubernetes/admin.conf
 
 ############################################################################################################################
 
@@ -250,26 +250,19 @@ kubectl -n kubeedge apply -f cloudcore-svc-nodeport.yaml
 
 ########################################################################################################################
 # Updated one. Use one them
-sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
-  --token=59ed3a0b63a9a5447a8b3aed9838ae0893302ab3d623ac5a123589679e08c9bd.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDI0OTY3ODd9.0GDq-L1CUmq2CLXyE3zZnarSlqH7MTrVQzNAmRPpL3A \
-  --kubeedge-version=v1.17.0 \
-  --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
-  --cgroupdriver=systemd
+            # sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
+            #   --token=59ed3a0b63a9a5447a8b3aed9838ae0893302ab3d623ac5a123589679e08c9bd.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDI0OTY3ODd9.0GDq-L1CUmq2CLXyE3zZnarSlqH7MTrVQzNAmRPpL3A \
+            #   --kubeedge-version=v1.17.0 \
+            #   --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
+            #   --cgroupdriver=systemd
 
 
-sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
-        --token=51656d166ae09290d62bfd7f4cbe94f5ba2bd375ddcc32ebe18893ae54e2d968.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc1MTMyNDJ9.OKnsrKI7LIrlEHBseqcQOKsyE-sdmQFltN_E_gOaLbw \
-        --kubeedge-version=1.20.0 \
-        --kube-config=/etc/kubernetes/admin.conf \
-        --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
-        --cgroupdriver=systemd
-
-sudo keadm join \
-  --cloudcore-ipport=192.168.56.102:10000 \
-  --token=49ff19c39b513f98aa798f007234a62ae96c2a57111038bea036353a3541cb13.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc4MDI0MTh9.JiNfMUqfAz8lr76jC_fAdprFPIytDfBgWn8eVcBDG4w \
-  --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
-  --kubeedge-version=1.20.0 \
-  --cgroupdriver=systemd
+            # sudo keadm join --cloudcore-ipport=192.168.56.102:10000 \
+            #         --token=51656d166ae09290d62bfd7f4cbe94f5ba2bd375ddcc32ebe18893ae54e2d968.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc1MTMyNDJ9.OKnsrKI7LIrlEHBseqcQOKsyE-sdmQFltN_E_gOaLbw \
+            #         --kubeedge-version=1.20.0 \
+            #         --kube-config=/etc/kubernetes/admin.conf \
+            #         --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
+            #         --cgroupdriver=systemd
 
 ##################################################################################################################
 
@@ -339,6 +332,7 @@ sudo scp /opt/cni/bin/calico-ipam vagrant@192.168.56.122:/home/vagrant/
 sudo mv /home/vagrant/calico /opt/cni/bin/
 sudo mv /home/vagrant/calico-ipam /opt/cni/bin/
 
+sudo systemctl daemon-reexec
 sudo systemctl restart edgecore
 sudo systemctl status edgecore
 
@@ -505,10 +499,10 @@ kubectl -n kubeedge apply -f cloudcore-svc-nodeport.yaml
 sudo keadm gettoken --kube-config /etc/kubernetes/admin.conf
 
 sudo keadm join \
-  --cloudcore-ipport=192.168.56.121:30002 \
-  --token=65d641eb23b1738f12d09cfe1055301ee24cceb0eef7e8af84a0593b9ae5b77d.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDc3NjA5ODZ9.EAh1JkEYIZrTwKSogaRvsUq9QSr42whpFEkTqSy0tzs \
-  --kubeedge-version=1.20.0 \
+  --cloudcore-ipport=192.168.56.121:30404 \
+  --token=17bad182c91474d94776646c25ace216d22987a13e0d3aeb54a05271b72c9240.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDg4OTE0MjB9.NrVu54_Yl74i8OfOWNsHOCwEyGFUs2jqFb1c8pal3bk \
   --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
+  --kubeedge-version=1.20.0 \
   --cgroupdriver=systemd
 
 sudo systemctl daemon-reexec
@@ -530,3 +524,92 @@ sudo chmod +x /usr/local/bin/cloudcore
 wget https://github.com/kubeedge/kubeedge/releases/download/v1.20.0/kubeedge-v1.20.0-linux-amd64.tar.gz
 tar -xvzf kubeedge-v1.20.0-linux-amd64.tar.gz
 sudo cp kubeedge-v1.20.0-linux-amd64/cloud/cloudcore /usr/local/bin/
+
+kubectl logs -n kubeedge <cloudcore-pod-name>
+
+kubectl edit configmap cloudcore -n kubeedge
+
+kubeAPIConfig:
+  kubeConfig: "/etc/kubernetes/admin.conf"
+
+kubectl delete pod cloudcore-58b79bbcdf-dtc5k -n kubeedge
+
+################################################################################
+#######################################################################
+# Kubeconfig error: 
+  # kubectl logs -n kubeedge cloudcore-58b79bbcdf-6cmfd
+  #   W0601 16:37:20.850893       1 validation.go:184] TLSTunnelPrivateKeyFile does not exist in /etc/kubeedge/certs/server.key, will load from secret
+  #   W0601 16:37:20.850965       1 validation.go:187] TLSTunnelCertFile does not exist in /etc/kubeedge/certs/server.crt, will load from secret
+  #   W0601 16:37:20.850985       1 validation.go:190] TLSTunnelCAFile does not exist in /etc/kubeedge/ca/rootCA.crt, will load from secret
+  #   F0601 16:37:20.851042       1 server.go:87] [
+  #     kubeconfig: Invalid value: "/etc/kubernetes/admin.conf": kubeconfig not exist
+  #   ]
+
+# fix the issue
+ls -l /etc/kubernetes/admin.conf
+      # -rw-r--r-- 1 root root 5654 May 31 20:37 /etc/kubernetes/admin.conf
+
+# Create a Secret from the admin.conf
+kubectl create secret generic cloudcore-kubeconfig \
+  --from-file=kubeconfig=/etc/kubernetes/admin.conf \
+  -n kubeedge
+
+# Patch the Deployment to Mount the Secret:
+kubectl edit deployment cloudcore -n kubeedge
+
+# Under spec.template.spec.volumes
+- name: kubeconfig
+  secret:
+    secretName: cloudcore-kubeconfig
+
+# Under spec.template.spec.containers[0].volumeMounts
+- name: kubeconfig
+  mountPath: /etc/kubeedge/kubeconfig
+  readOnly: true
+
+# Update the ConfigMap cloudcore
+kubectl edit configmap cloudcore -n kubeedge
+
+# then
+    kubeAPIConfig:
+     kubeConfig: /etc/kubeedge/kubeconfig/kubeconfig
+
+# Restart the pod:
+kubectl delete pod cloudcore-58b79bbcdf-dtc5k -n kubeedge
+kubectl rollout restart deployment cloudcore -n kubeedge
+###################################################################################
+#####################################################################################
+Or yet another good solution is:
+###############################################################################
+# Edit the CloudCore Deployment:
+kubectl -n kubeedge edit deployment cloudcore
+
+# nside the spec.template.spec.containers[0], add this volume mount:
+volumeMounts:
+  - name: kube-config
+    mountPath: /etc/kubernetes
+    readOnly: true
+
+# Still inside the same Deployment YAML, add the volume definition:
+volumes:
+  - name: kube-config
+    hostPath:
+      path: /etc/kubernetes
+      type: Directory
+
+# then
+kubectl rollout restart deployment cloudcore -n kubeedge
+
+# check
+kubectl get pods -n kubeedge
+##################################################################################
+#####################################################################
+
+
+
+kubectl -n kubeedge patch svc cloudcore -p '{"spec": {"type": "NodePort"}}'
+kubectl -n kubeedge get svc cloudcore
+
+sudo systemctl daemon-reexec
+sudo systemctl restart edgecore
+sudo systemctl status edgecore
