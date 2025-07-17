@@ -498,12 +498,13 @@ kubectl -n kubeedge apply -f cloudcore-svc-nodeport.yaml
 
 sudo keadm gettoken --kube-config /etc/kubernetes/admin.conf
 
+# consider the nodeport IP of the internal port 10000
 sudo keadm join \
-  --cloudcore-ipport=192.168.56.121:30404 \
-  --token=17bad182c91474d94776646c25ace216d22987a13e0d3aeb54a05271b72c9240.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDg4OTE0MjB9.NrVu54_Yl74i8OfOWNsHOCwEyGFUs2jqFb1c8pal3bk \
+  --cloudcore-ipport=192.168.56.121:31427 \
+  --token=17bad182c91474d94776646c25ace216d22987a13e0d3aeb54a05271b72c9240.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDg5MzQ2MjB9._FD8MMsZzdHr9FCFWR77RPsaGrsE1aRdNjElU38K_yw \
   --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
-  --kubeedge-version=1.20.0 \
-  --cgroupdriver=systemd
+  --cgroupdriver=systemd \
+  --kubeedge-version=1.20.0
 
 sudo systemctl daemon-reexec
 sudo systemctl restart edgecore
@@ -605,10 +606,17 @@ kubectl get pods -n kubeedge
 ##################################################################################
 #####################################################################
 
-
-
 kubectl -n kubeedge patch svc cloudcore -p '{"spec": {"type": "NodePort"}}'
 kubectl -n kubeedge get svc cloudcore
+
+# check cloudcore running
+kubectl get deployment cloudcore -n kubeedge
+kubectl get pods -n kubeedge -l kubeedge=cloudcore -o wide
+
+# see logs
+kubectl logs -n kubeedge -l kubeedge=cloudcore --tail=100 -f
+kubectl exec -n kubeedge <cloudcore-pod-name> -- netstat -tuln | grep 1000
+
 
 sudo systemctl daemon-reexec
 sudo systemctl restart edgecore
