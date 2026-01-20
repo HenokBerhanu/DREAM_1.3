@@ -1,4 +1,4 @@
-# SDN-Based Cloud-Edge Microservices Architecture for Smart Healthcare
+# SDN-Integrated Cloud-Edge Digital Twin Framework for Real-Time Monitoring in Additive Manufacturing
 
 This repository implements a Software-Defined Networking (SDN)-enabled, Kubernetes-based cloud-edge microservices architecture for **real-time hospital asset tracking, predictive maintenance**, and **dynamic security enforcement**.
 
