@@ -20,7 +20,7 @@ The framework targets IoT-enabled AM assets such as **3D printers, CNC machines,
 
 ## 🚀 Architecture Overview
 
-### Nodes (Hybrid Kubernetes + KubeEdge)
+### Nodes (Kubernetes + KubeEdge)
 
 | Role   | Node         | Runtime              | Networking                       | What it hosts                                                                                         |
 | ------ | ------------ | -------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------- |
