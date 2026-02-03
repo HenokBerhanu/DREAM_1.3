@@ -8,7 +8,7 @@ It combines:
 * **MQTT → TelemetryAgent → Kafka (Strimzi)** for real-time telemetry streaming
 * **Policy Management System (PMS)** for anomaly/policy decisions in the cloud
 * **ONOS SDN controller + Open vSwitch (OVS)** for flow-level enforcement at the edge
-* **Prometheus + Grafana** for monitoring latency/throughput and enforcement metrics
+* **Prometheus + Grafana** for collecting and visualizing metrics
 
 The framework targets IoT-enabled AM assets such as **3D printers, CNC machines, and robotic arms**, enabling **low-latency twin synchronization**, **adaptive policy enforcement**, and **resilient operation under unstable edge–cloud connectivity**.
 

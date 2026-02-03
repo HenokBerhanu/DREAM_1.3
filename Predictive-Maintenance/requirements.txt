@@ -1,6 +1,0 @@
-flask
-numpy
-tensorflow
-kafka-python
-requests
-prometheus_client
