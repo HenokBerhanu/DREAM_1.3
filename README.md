@@ -94,7 +94,7 @@ The framework targets IoT-enabled AM assets such as **3D printers, CNC machines,
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   └── telemetry_agent.py
-├── pms/
+├── policy-management-system/
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   └── pms_service.py
@@ -363,6 +363,18 @@ This repository implements the architecture described in:
 
 **“SDN-Integrated Cloud-Edge Digital Twin Framework for Real-Time Monitoring in Additive Manufacturing”**
 (Recently published work)
+
+@INPROCEEDINGS{11229916,
+  author={Tsegaye, Henok B. and Tshakwanda, Petro M. and Karukutla, Ashok and Almaayn, Raddad and Worku, Yonatan M. and Kumar, Harsh and Devetsikiotis, Michael},
+  booktitle={2025 IEEE 30th International Workshop on Computer Aided Modeling and Design of Communication Links and Networks (CAMAD)}, 
+  title={SDN-Integrated Cloud-Edge Digital Twin Framework for Real-Time Monitoring in Additive Manufacturing}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={1-6},
+  keywords={Cloud computing;Traffic control;Three-dimensional printing;Real-time systems;Digital twins;Telemetry;Synchronization;Software defined networking;Fifth Industrial Revolution;Edge computing;Digital Twin;Additive Manufacturing;Software-Defined Networking;Real-Time Monitoring;Cloud-Edge Continuum;Industry 5.0},
+  doi={10.1109/CAMAD67323.2025.11229916}}
+
 
 ---
 
