@@ -105,8 +105,6 @@ The framework targets IoT-enabled AM assets such as **3D printers, CNC machines,
 └── README.md
 ```
 
-> If your repo already has a different structure, keep it—this layout is a clean mapping to the paper components.
-
 ---
 
 ## 🔧 Setup Guide (Complete, Copy-Paste Friendly)
