@@ -265,9 +265,6 @@ chmod +x attach-pod-to-ovs.sh
 # ./attach-pod-to-ovs.sh <namespace> <pod-name> br0
 ./attach-pod-to-ovs.sh default telemetry-agent-pod br0
 ```
-
-> Keep the detailed logic and required privileges documented in `deployments/edge/ovs-attach/README.md`.
-
 ---
 
 ### 7) Start AM Device Simulators (EdgeNode)
@@ -293,7 +290,7 @@ sudo systemctl start am-robot-arm
 
 ---
 
-### 8) End-to-End Sanity Checks
+### 8) End-to-End Checks
 
 #### 8.1 MQTT ingestion
 
@@ -307,7 +304,6 @@ mosquitto_sub -h <MQTT_BROKER_IP> -t "/am/#" -v
 
 ```bash
 kubectl get pods -A | grep kafka
-# then exec into a kafka tools pod / client pod if you have one
 ```
 
 #### 8.3 ONOS + OVS connectivity
@@ -340,7 +336,7 @@ sudo ovs-ofctl -O OpenFlow13 dump-flows br0
 
 ## 📈 Monitoring & Visualization
 
-### Prometheus Metrics (examples)
+### Prometheus Metrics
 
 Expose metrics from:
 
@@ -348,7 +344,7 @@ Expose metrics from:
 * `pms` (alerts processed, actions triggered, decision latency)
 * `onos` (controller health, flow install stats)
 
-### Grafana Dashboards (examples)
+### Grafana Dashboards
 
 * Digital Twin sync latency over time
 * MQTT → Kafka pipeline latency breakdown
