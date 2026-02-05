@@ -107,7 +107,7 @@ The framework targets IoT-enabled AM assets such as **3D printers, CNC machines,
 
 ---
 
-## 🔧 Setup Guide (Complete, Copy-Paste Friendly)
+## 🔧 Setup Guide
 
 ### 0) Prerequisites
 
