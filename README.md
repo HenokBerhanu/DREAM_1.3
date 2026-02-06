@@ -1,5 +1,7 @@
 # Scalable DIAM Network Architecture for Multi-Site MaaS Testbed
 
+This repository is intended for
+
 This repository provides a reference implementation of an **SDN-integrated cloud–edge Digital Twin (DT) framework** for **real-time monitoring** and **programmable traffic control** in **additive manufacturing (AM)** environments.
 
 It combines:
