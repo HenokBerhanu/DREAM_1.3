@@ -99,9 +99,7 @@ The framework targets IoT-enabled AM assets such as **3D printers, CNC machines,
 │   ├── requirements.txt
 │   └── pms_service.py
 ├── figs/
-│   ├── camad2025_architecture.png
-│   ├── devicetwin_subsystem.png
-│   └── sdn_control_loop.png
+│   ├── CAMAD1-1.png
 └── README.md
 ```
 
@@ -261,7 +259,6 @@ Example workflow (adapt to your environment):
 cd deployments/edge/ovs-attach
 chmod +x attach-pod-to-ovs.sh
 
-# Example:
 # ./attach-pod-to-ovs.sh <namespace> <pod-name> br0
 ./attach-pod-to-ovs.sh default telemetry-agent-pod br0
 ```
