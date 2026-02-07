@@ -4,10 +4,6 @@
 
 ![DIAM Network Architecture for Multi-Site MaaS png](figs/MaaS.png)
 
-<figure align="center">
-  <img src="figs/MaaS.png" width="600" alt="DIAM Network Architecture for Multi-Site MaaS (PNG)">
-  <figcaption>DIAM Network Architecture for Multi-Site MaaS</figcaption>
-</figure>
-
+<img src="figs/MaaS.png" width="600" alt="DIAM Network Architecture for Multi-Site MaaS (PNG)">
 
 ![Local MaaS testbed](figs/Local_MaaS.jpeg)
