@@ -1,4 +1,7 @@
 # Scalable DIAM Network Architecture for Multi-Site MaaS between UNM, NMSU, NMT, and NTU
 
+![DIAM Network Architecture for Multi-Site MaaS webm](figs/DREAM_MaaS_Busines_Model.gif) 
 
-![SDN-integrated Cloud–Edge DT Architecture](figs/MaaS.png)
+![DIAM Network Architecture for Multi-Site MaaS png](figs/MaaS.png)
+
+![Local MaaS testbed](figs/Local_MaaS.jpeg)
