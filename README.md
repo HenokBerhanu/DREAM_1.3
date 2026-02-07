@@ -2,7 +2,7 @@
 
 ![DIAM Network Architecture for Multi-Site MaaS webm](figs/DREAM_MaaS_Busines_Model.gif) 
 
-![DIAM Network Architecture for Multi-Site MaaS png](figs/MaaS.png)
+<!-- ![DIAM Network Architecture for Multi-Site MaaS png](figs/MaaS.png) -->
 
 <img src="figs/MaaS.png" width="600" alt="DIAM Network Architecture for Multi-Site MaaS (PNG)">
 
