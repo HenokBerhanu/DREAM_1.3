@@ -1,4 +1,4 @@
-# Scalable DIAM Network Architecture for Multi-Site MaaS Testbed
+# Scalable DIAM Network Architecture for Multi-Site MaaS between UNM, NMSU, NMT, and NTU
 
 This repository provides a reference implementation of an **SDN-integrated cloud–edge Digital Twin (DT) framework** for **real-time monitoring** and **programmable traffic control** in **additive manufacturing (AM)** environments.
 
@@ -14,7 +14,7 @@ The framework targets IoT-enabled AM assets such as **3D printers, CNC machines,
 
 ---
 
-![SDN-integrated Cloud–Edge DT Architecture](figs/CAMAD1-1.png)
+![SDN-integrated Cloud–Edge DT Architecture](figs/MaaS.png)
 
 ---
 
