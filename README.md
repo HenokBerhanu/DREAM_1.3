@@ -18,4 +18,3 @@ This repo is dedicated to:
 ---
 <img src="figs/Local_MaaS.jpeg" width="600" alt="Local MaaS testbed">
 <!-- ![Local MaaS testbed](figs/Local_MaaS.jpeg) -->
----
