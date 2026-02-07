@@ -7,9 +7,10 @@ This repo is dedicated to:
 * Establishes a closed-loop design: Telemetry Agent streams health/queue/RTT/progress back to cloud services (SLA Intelligence + Job Manager) for continuous re-scoring and decisions.​
 * Adds an edge-side Security Enforcement Agent that applies cloud- derived ACL/QoS policies at the edge to protect and segment job traffic.
 
-
+---
 <img src="figs/DREAM_MaaS_Busines_Model.gif" width="600" alt="DIAM Network Architecture for Multi-Site MaaS (GIF)">
 <!-- ![DIAM Network Architecture for Multi-Site MaaS webm](figs/DREAM_MaaS_Busines_Model.gif) -->
+---
 
 <img src="figs/MaaS.png" width="600" alt="DIAM Network Architecture for Multi-Site MaaS (PNG)">
 <!-- ![DIAM Network Architecture for Multi-Site MaaS png](figs/MaaS.png) -->
