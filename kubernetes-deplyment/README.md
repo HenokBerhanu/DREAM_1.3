@@ -28,7 +28,7 @@ cd DREAM-Scalable-MaaS
 Setup:
 - The three nodes: `MasterNode`, `CloudNode`, and `EdgeNode`
 - go to the k8s website to setup each nodes: https://kubernetes.io/ or follow:
-- /kubernetes-deplyment/notes/node-setup_v1.28.sh or /kubernetes-deplyment/notes/node-setup_v1.29.sh or /kubernetes-deplyment/notes/node-setup_v1.33.sh 
+- /kubernetes-deplyment/notes/node-setup_v1.28.sh or /kubernetes-deplyment/notes/node-setup_v1.29.sh or /kubernetes-deplyment/notes/node-setup_v1.33.sh (We are using v33)
 
 ### 3. Access the Cluster
 
