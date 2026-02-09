@@ -7,6 +7,11 @@ This repo is dedicated to:
 * Establishes a closed-loop design: Telemetry Agent streams health/queue/RTT/progress back to cloud services (SLA Intelligence + Job Manager) for continuous re-scoring and decisions.​
 * Adds an edge-side Security Enforcement Agent that applies cloud- derived ACL/QoS policies at the edge to protect and segment job traffic.
 
+
+## Start setup
+### first deply k8s cluster for network orchestration:
+
+Follow the readme file in the this directory to setup k8s cluster: /kubernetes-deplyment/README.md
 ---
 <img src="figs/DREAM_MaaS_Busines_Model.gif" width="600" alt="DIAM Network Architecture for Multi-Site MaaS (GIF)">
 <!-- ![DIAM Network Architecture for Multi-Site MaaS webm](figs/DREAM_MaaS_Busines_Model.gif) -->
