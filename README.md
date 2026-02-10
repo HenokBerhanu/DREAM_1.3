@@ -11,7 +11,8 @@ This repo is dedicated to:
 ## Start setup
 ### First deply k8s cluster for network orchestration:
 
-Follow the readme file in the this directory to setup k8s cluster: /kubernetes-deplyment/README.md
+### Follow the readme file in the this directory to setup k8s cluster: /kubernetes-deplyment/README.md
+
 ---
 <img src="figs/DREAM_MaaS_Busines_Model.gif" width="600" alt="DIAM Network Architecture for Multi-Site MaaS (GIF)">
 <!-- ![DIAM Network Architecture for Multi-Site MaaS webm](figs/DREAM_MaaS_Busines_Model.gif) -->
