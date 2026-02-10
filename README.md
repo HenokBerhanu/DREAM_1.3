@@ -8,7 +8,7 @@ This repo is dedicated to:
 * Adds an edge-side Security Enforcement Agent that applies cloud- derived ACL/QoS policies at the edge to protect and segment job traffic.
 
 
-## Start setup
+## Start setupp
 ### first deply k8s cluster for network orchestration:
 
 Follow the readme file in the this directory to setup k8s cluster: /kubernetes-deplyment/README.md
