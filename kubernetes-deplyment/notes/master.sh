@@ -1,6 +1,6 @@
 #################################################################################################################
-sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cidr=192.168.0.0/16 # 192.168.0.0/16 if Calico CNI is used # 10.244.0.0/16 if Flannel CNI is used
-# or you can also provide image repo directory if there is a firewall issue or the aboove command got stuck taking longer time
+sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cidr=10.244.0.0/16 # 192.168.0.0/16 if Calico CNI is used # 10.244.0.0/16 if Flannel CNI is used
+  # or you can also provide image repo directory if there is a firewall issue or the aboove command got stuck taking longer time
 
 # kubeadm config images list --kubernetes-version v1.29.15 --image-repository registry.k8s.io
 
@@ -16,11 +16,12 @@ sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cid
 #   sudo ctr images pull $img || { echo "❌ Failed to pull $img"; exit 1; }
 # done
 
-
+# If the above didnt work:
 sudo kubeadm init --apiserver-advertise-address=192.168.56.102 --pod-network-cidr=10.244.0.0/16 --image-repository registry.k8s.io
 #################################################################################################################
 
 #########################################################################
+# To make kubectl work for your non-root user, run these commands, which are also part of the kubeadm init output:
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -122,3 +123,6 @@ kubectl api-versions | grep rbac.authorization.k8s.io/v1
 
 # I am creating a single node cluster, make sure to taint the control plane restriction to schedule pods in it (This is only for microk8s)
 kubectl taint node --all node-role.kubernetes.io/control-plane:NoSchedule-
+
+#########################################################################################
+# After declaring the master node and settign up CNI addon, move to the /kubernetes-deplyment/notes/woreker.sh file to join the worker node to the cluster.

@@ -110,3 +110,9 @@ sudo apt-mark hold kubelet kubeadm kubectl
 # (Optional) Enable the kubelet service before running kubeadm:
 sudo systemctl enable --now kubelet
 ################################################################
+
+###################################################
+# What's next?
+# Click the "Using kubeadm to Create a Cluster" link at the bottom of the same page declare the master node and- 
+    # the worker node (Accessing the these two files: /kubernetes-deplyment/notes/master.sh and /kubernetes-deplyment/notes/woreker.sh)
+###################################################

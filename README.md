@@ -9,7 +9,7 @@ This repo is dedicated to:
 
 
 ## Start setup
-### first deply k8s cluster for network orchestration:
+### First deply k8s cluster for network orchestration:
 
 Follow the readme file in the this directory to setup k8s cluster: /kubernetes-deplyment/README.md
 ---
