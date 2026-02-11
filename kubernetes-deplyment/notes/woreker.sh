@@ -15,3 +15,6 @@ kubectl label node cloudnode node-role.kubernetes.io/worker-node=
 
 sudo kubeadm join 192.168.56.102:6443 --token i3eae7.7jsj5n0c0gdieimo \
 	--discovery-token-ca-cert-hash sha256:fba6973f1a44fb75d9c7d6459d09dbd3785b1d9bd212c6d1080a5c7bf2983cd2 
+
+# At this point, the worker node should be added succesfuly and can access the cluster successfully.
+# Now move to the cloud_deployments/cloud.sh and edge_deployments/edge.sh files to add the the third edge node and setup kubeedge

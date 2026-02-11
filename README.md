@@ -13,6 +13,8 @@ This repo is dedicated to:
 
 ### Follow the readme file in the this directory to setup k8s cluster: /kubernetes-deplyment/README.md
 
+After following the instructions and setup the k8s cluster, follow the files cloud_deployments/cloud.sh and edge_deployments/edge.sh to setup kubeedge in both the cloud and master node.
+
 ---
 <img src="figs/DREAM_MaaS_Busines_Model.gif" width="600" alt="DIAM Network Architecture for Multi-Site MaaS (GIF)">
 <!-- ![DIAM Network Architecture for Multi-Site MaaS webm](figs/DREAM_MaaS_Busines_Model.gif) -->
